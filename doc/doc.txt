@@ -1,0 +1,249 @@
+------------------------------------------------------------------
+GameLibZeroWEB - 4Div.js
+Documentacion oficial 2024.
+Autor: Luis lopez martinez.
+------------------------------------------------------------------
+CORE:
+    int _id_                            - Puntero al proceso actual en ejecucion, usado en funciones de evento para acceder al proceso que las ha llamado..
+    gameObjects                         - Array de procesos de la aplicacion, usando en busquedas con procesos..
+    class GameObject();                 - Objeto/entidad base del motor. Conocida tambien como 'proceso'. Es un objeto con uid que puede controlar un modelo 3d o un sprite entre otras muchas cosas..
+    long frameCount                     - Contador de frames de la aplicación. Es un contador incremental interno.
+    signal( id, signal_type_ );         - Puntero a un proceso, tipo de señal [s_kill, s_protected, s_unprotected].
+    signalType( proc_type, signal_type_ );  - tipo de proceso, señal..
+    letMeAlone();                       - Manda señal s_kill a todos los procesos activos menos al que realiza la llamada..
+    boolean exists( int id );           - comprueba si existe un proceso.
+    Process getObject( property_name, value );  - busca un proceso que tenga la propiedad/variable property_name y comprueba que su valor sea value, devuelve el puntero al proceso si lo encuentra.
+    Process getObjectById( int id );    - devuelve undefined/el puntero al proceso que tiene el numero de id pasado como parametro..
+
+FILESYSTEM:
+    boolean fileExists(string filename);    - Retorna true/false si existe el archivo indicado como parametro. Intenta realizar una consulta XMLHttpRequest() para verificar si el recurso esta disponible.
+    downloadTxt( filename, text );          - Inicia la descarga de un archivo de texto "filename" con text como contenido. (text suele ser un gran string con el delimitador entre lineas para windows "\n" o "\n\r").
+    uploadTxt();                            - Abre un cuadro de dialogo para subir un archivo a la aplicacion.    
+    include( filename );                    - Carga un script js de forma asincrona en el programa.
+
+SYSTEM:
+    setMode( int ancho, int alto, boolean fullscreen, boolean bilinear_filter );    - Establece una resolucion para la aplicacion con diferentes opciones para la ventana..
+    setFps( value );                    - Establece un valor de imagenes por segundo para la aplicacion.
+    string getOrientation();            - Retorna: "portrait" o "landscape" segun la orientacion del dispositivo.
+    boolean isMobile();                 - Retorna true/false si el dispositivo es mobil o no. (basado en el numero de puntos tactiles disponibles para la pantalla).
+    long millis();                      - Retorna el momento actual expresado en milisegundos..
+    setTitle( string title );           - Establece un titulo para la ventana del navegador..
+    method( string fname );             - Ejecuta una funcion pasada como parametro en forma de string.. Se usa para trabajar con eventos..
+    str( value );                       - Retorna un string con el valor pasado como parametro.
+    rgb( r, g, b );                     - Retorna el color resultante de los valores por componente en el formato #rrggbb.
+    rgba( r, g, b, a );                 - Retorna el color resultante de los valores por componente en el formato #rrggbbaa.
+    RGBToHex( r, g, b );                - Igual que rgb(), existe por compatibilidad.
+    RGBAToHex( r, g, b, a );            - Igual que rgba(), existe por compatibilidad.
+    HexToRgb( hex );                    - Retorna un array con los valores por componente del parametro expresado como: #rrggbb.
+    arrayToHex( color );                - Retorna: RGBToHex(color[0], color[1], color[2]);
+    map( value, istart, istop, ostart, ostop, clip_to_output_limits );  - Retorna un valor expresado proporcionalmente en otra escala. ej: map( 5, 0, 10,  0, 100, true ) = 50;
+
+MATH:
+    int abs( number );                  - Retorna el valor absoluto de un numero con decimales..
+    float sin( value );                 - Retorna el seno de un angulo expresado en radianes..
+    float cos( value );                 - Retorna el coseno de un angulo expresado en radianes..
+    float rand( min, max );             - Retorna un valor aleatorio de entre los limites pasados como parametros, limites incluidos.
+    int randInt( min, max );            - Rerorna un valor aelatorio de entre los limites pasados como parametros, limites incluidos. Casteo a INT implicito..
+    float random( min / min,max );      - con 1 parametro: retorna valor aleatorio entre 0 y el maximo, con 2 parametros es igual que rand(min, max);
+    float radians( value );             - Retorna el equivalente en radianes del angulo en grados pasado como parametro.
+    float degrees( value );             - Retorna el equivalente en grados del angulo en radianes pasado como parametro.
+    boolean isInteger( value );         - Retorna true/false si un valor es entero.
+    boolean parseBoolean( string value );- Retorna true/false de un string pasado como parametro.
+
+
+MOUSE:
+    class Mouse()                       - Clase que el motor instancia automaticamente, consta de varias propiedades utiles durante la ejecucion del juego.
+        .x:                             - Coordenada x del mouse.. int
+        .y:                             - Coordenada y del mouse..  int
+        .left:                          - Estado del boton izquierdo del mouse.. boolean
+        .right:                         - Estado del boton derecho del mouse.. boolean
+        .middle:                        - Estado del boton central del mouse.. boolean
+        .wheelUp:                       - Estado de la rueda del raton arriba.. boolean
+        .wheelDown:                     - Estado de la rueda del raton abajo.. boolean
+        .intersects[]:                  - Lista de objetos 3d que intersectan con el puntero del mouse.. array
+        .intersect( Process )           - Retorna true/false si el proceso pasado por parametro colisiona con el mouse "siempre que el proceso tenga un modelo 3d".
+
+SCREEN:
+    fadeOn( int milliseconds );         - Funde la pantalla "activa" durante un tiempo pasado como parametro..
+    fadeOff( int milliseconds );        - Funde la pantalla "apaga" durante un tiempo pasado como parametro..
+    Process screenDrawGraphic(img_, x, y, angle, sizeX, sizeY, alpha);                                          - Crea un grafico 2d en pantalla y devuelve el puntero al proceso que lo controla.
+    Process screenDrawSprite(texture_path, x = 0, y = 0, z = 0, anglex = 0, angley = 0, anglez = 0, size = 1);  - Crea un grafico 2d "en el entorno 3D" y devuelve el puntero al proceso que lo controla. (billboard).
+
+3D:
+    setAmbientLight( color, intensidad );   - Establece una iluminacion ambiental para en ambito 3d.
+    enableShadows( true/false );            - Activa o desactiva las sombras del render 3d..
+    setBackgroundColor( color );            - Establece el color de fondo del ambito 3d que es el que se pinta con mayor profundidad.
+    setFadingColor( color );                - Establece un color para el fundido de pantalla..
+    setFog( float near, float far );        - Establece una distancia minima y maxima para la niebla..
+    setTexture( mesh, texture );            - Aplica una textura a todas las geometrias de un modelo 3d.
+    mixamoMerger( models[] );               - Dado un array de modelos 3d obtenidos del servicio 'Mixamo' de Adobe, se creara un modelo unico con todas las animaciones de todos los modelos. Se utiliza para unir las animaciones que crea gratuitamente el servicio mixamo en un unico modelo y poder ser usado asi facilmente en el juego.
+
+TEXT:
+    object textInfo( fnt, size, text );     - Retorna un objeto con varias propiedades como el ancho, alto etc del texto pasado por parametro..
+    class Write( font, size, text, align, x, y, color, alpha );
+
+SCROLL:
+    class Scroll( texture, ancho, alto );   - Clase que permite crear sprites con texturas ciclicas.
+        .tiling                             - Vector X/Y que indica la cantidad de repeticiones de la textura en cada eje..
+        .offset                             - Vector X/Y que indica la cantidad de desplazamiento de la textura en cada eje..
+        .autoScale()                        - Ajusta el tamaño del scroll a pantalla completa.        
+
+LOADERS:
+    class LoadImages( string path_, int numFiles ); - Crea un proceso que se encargara de cargar una coleccion de imagenes en el path indicado, cargara desde el archivo 000.png hasta el numfiles.png, los archivos deben estar en el formato xxx.png siendo numeros consecutivos.
+    class LoadSounds( string path_, int numFiles ); - Igual que el anterior pero para archivos .mp3.
+    class LoadTxt( filename );                      - Carga un archivo de texto indicando su ruta.
+    class LoadModels( model_list[] );               - Dada una lista de nombres de archivo en formato .obj o .fbx se encargara de cargar dichos modelos.
+    class LoadFonts( font_list[] );                 - Data una lista de nombres de archivo, el proceso se encargara de realizar la carga de los mismos.
+        .get();                                     * Todos los loaders desasistidos disponen de este metodo que devuelve un array con los assets cargados.
+        .ready:                                     * Todos los loaders desasistidos disponen de esta propiedad BOOLEAN que indica cuano se ha terminado la carga de los assets indicados.
+    texture loadTexture( texture_path );            - Carga una textura en el formato utilizado por three.js, se utiliza para texturizar primitivas graficas como cubos o esferas o planos.
+
+GUI:
+    lockEGUI();                             - Bloquea los controles actuales de la interfaz de usuario. Se usa cuando se quiere dormir toda la GUI actual para lanzar una ventana encima con otros controles.
+    unlockEGUI();                           - Desbloquea los controles actuales.
+    Process EGUIcheckButton( x, y, width, height, value );  - Crea un control del tipo checkBox.
+    Process EGUIbutton( font, size, label, x, y, color );   - Crea un control del tipo boton.
+    Process EGUIgbutton( gr, x, y, size );                  - Crea un control del tipo boton con imagen.
+    Process EGUIinputBox( font, size, label, text, x, y, w, h = size, pwdMode = false ); - Crea un control del tipo entrada de texto.
+        .setEvent( string eventName );      - Establece un nombre de funcion callback para ser llamada cuando el control se active.
+
+
+
+ANIMATION:
+
+INPUT:
+
+CAMERA:
+    class Camera3d();                       - Es un controlador de la camara para el entorno 3d de la aplicacion.
+        .rotateX( value );                  - Rota la camara en el eje X una cantidad indicada como parametro.
+        .resetX();                          - Restablece la orientacion del eje X a su punto inicial.
+        .rotateY( value );                  - Rota la camara en el eje Y una cantidad indicada como parametro.
+        .resetY();                          - Restablece la orientacion del eje Y a su punto inicial.
+        .reset();                           - Restablece ambos ejes a su estado inicial.
+        .setFreeMoveDistance( value );      - Establece una zona en la que el target de la camara podra moverse libremente sin desplazamiento de camara.
+        .manualMovement();                  - Activa el modo "debug" que permite mover la camara con las teclas de cursor.
+        .setCollision( value );             - Activa o desactiva la colision de la camara con el entorno 3d. (La camara no puede atravesar paredes o suelos/techos/objetos)..
+        .setTarget( Process );              - Establece el objetivo al que seguira la camara.
+        .setTargetDistance( value );        - Establece la distancia a la que se situara la camara del objetivo.
+        .setTargetHeight( value );          - Establece una altura para la camara en relacion con el objetivo.
+        .setPosition( x, y, z );            - Movera la camara a las coordenadas indicadas por parametro, "SI NO EXISTE UN TARGET".
+
+SOUND:
+    soundSetMasterVolume( value );          - Establece un valor de volumen para la aplicacion.
+    class SoundPlayTimed( snd, millis_ );   - Reproduce un sonido al transcurrir de un tiempo.
+    soundPlay( sound, loop, volume );       - Reproduce un sonido. loop true/false, volume 0.0/1.0.
+    soundStop( sound, snd[] );              - Detiene un sonido, all_sound como primer parametro detendra todos los sonidos del array snd[].. el segundo parametro no es necesario ni obligatorio.
+    soundSetVolume( sound, volume );        - Establece un volumen a un sonido..
+    soundFade( sound, tiem_ms );            - Realiza un fadeOff a un sonido durante un tiempo expresando en milisegundos..
+
+
+PHYSICS:
+    setGravity( float gx, float gy );   - Establece la gravedad para el mundo fisico.
+
+class GameObject()
+    .createSprite( img_ );              - Crea un billboard para el proceso que realiza la llamada, como parametro se debe indicar el filename de la imagen a cargar.
+    .createBox( width, height, depth ); - Crea una primitiva grafica del tipo cubo 3d.
+    .createPlane( width, height );      - Crea un cubo 3d de 1 de alto. Esto puede cambiar en el futuro y pasar a ser un plano real de cero de alto.
+    .disposeMesh();                     - libera los recursos 3d del proceso, ya sea modelo 3d o primitiva grafica 3d y material. Este metodo se llama automaticamente cuando un proceso recibe un signal s_kill o es victima de un letMeAlone();
+    .createSphere( radius, detail );    - Crea una primitiva grafica 3d del tipo esfera de un radio determinado y con un nivel de detalle determinado, por defecto el nivle de detalle es 10.
+    .createCylinder( r_top, r_bot, height ); - Crea una primitiva grafica 3d del tipo cilindro, con un radio superior, radio inferior y altura.
+    .createTorus( radius, weight );     - Crea una primitiva grafica 3d del tipo donut/toroide.
+    .createIcosahedron( radius );       - Crea una primitiva grafica 3d del tipo icosaedro.
+    .createMaterial( shaderType, color, texture_repeat = false ); - Crea un material para la primitiva grafica del proceso. tipos BASIC, LAMBERT, WIRED, STANDARD, TOON, PHONG, TEXTURED. Consultar los ejemplos para mas informacion.
+    .worldToScreen();                   - Retorna un vector XY con la posicion en la que aparece un objeto 3d en pantalla. Usado para colocar textos 2d junto a un objeto 3d.
+    .createBody( tipo );                - Crea un collider para el proceso tomando como referencia la primitiva grafica 3d del proceso, existen varios tipos de collider: TYPE_CYLINDER, TYPE_BOX, TYPE_SPHERE, TYPE_PLANE.
+    .setEventCollisionStart( f_name );  - Crea una funcion callback que sera llamada cuando el proceso inicie una colision.
+    .setEventCollisionEnd( f_name );    - Crea una funcion callback que sera llamada cuando el proceso termine una colision.
+    .setSensor();                       - Establece el proceso como un sensor, esto desabilita el solver de colision con este objeto, pero seguida detectando colisiones. Usado en juegos para crear sensores por donde un personaje puede pasar y disparar un evento o suceso.
+    .setMass( mass );                   - Establece una masa para el objeto 3d con fisica.
+    .getMass();                         - Retorna la masa de un objeto 3d con fisica.
+    .addImpulse( imp_ );                - Aplica un impulso al objeto 3d con fisica.
+    .addImpulseFromCamera( force, angle, camera ); - Aplica un impulso en la direccion de la camara para angle=0. Consultar ejemplos para ver su uso.
+    .setVelocityFromCamera( velocity, angle, camera );  - Aplica una velocidad en la direccion de la camara. Usado para mover un personaje u objeto sin aceleracion con velocidad constante.
+    .addVx( vel );                      - Establece una velocidad en el eje X.
+    .addVy( vel );                      - Establece una velocidad en el eje Y.
+    .addVz( vel );                      - Establece una velocidad en el eje Z.
+    .getVx() .getVy() . getVz();        - Retorna la velodad en el eje correspondiente.
+    .brake( percent );                  - Aplica una frenada de velocidad multiplicando la velocidad de cada eje por el valor de percent, si percent=0.9, a cada frame que se llame a esta funcion la velocidad se vera reducida drasticamente, simulando una frenada.
+    .brakeX( percent );                 - Aplica una frenada en el eje X.
+    .brakeY( percent );                 - Aplica una frenada en el eje Y.
+    .brakeZ();                          - Aplica una frenada en el eje Z.
+    .translateX( dist );                - Aplica un desplazamiento del objeto en el eje X.
+    .translateY( dist );                - Aplica un desplazamiento del objeto en el eje Y.
+    .translateZ( dist );                - Aplica un desplazamiento del objeto en el eje Z.
+    .locateX( pos );                    - Coloca un objeto en la posicion indicada del eje X.
+    .locateY( pos );                    - Coloca un objeto en la posicion indicada del eje Y.
+    .locateZ( pos );                    - Coloca un objeto en la posicion indicada del eje Z.
+    .rotateX( ang );                    - Rota un objeto ang grados en el eje X.
+    .rotateY( ang );                    - Rota un objeto ang grados en el eje Y.
+    .rotateZ( ang );                    - Rota un objeto ang grados en el eje Z.
+    .setStatic( true/false );           - Establece un objeto con fisica como estatico "no se mueve con la gravedad ni colisiones". Usado para elementos de un escenario fijo.
+    .setFixedRotation( true/false );    - Impide que un objeto con fisica pueda rotar.
+    .addGroundControl();                - Activa el control de toco_suelo de un objeto 3d con fisica.
+    .removeGroundControl();             - Desactiva el control de toco_suelo de un objeto 3d con fisica.
+    .isOnGround();                      - Retorna true/false si el objeto toca suelo "colisiona con algun objeto 3d con fisica en el eje Y por debajo".
+    .setRotation( vec );                - Aplica un vector de rotacion.
+    .setRotationX( value );             - Aplica una rotacion en el eje X.
+    .setRotationY( value );             - Aplica una rotacion en el eje Y.
+    .setTexture( filepath );            - Establece una textura para el material de la primitiva grafica 3d del proceso.
+    .setModel( model );                 - Establece un modelo 3d para el proceso actual.
+    .clipSet( num );                    - Establece una animacion para el modelo del proceso.
+    .clipPlay( repeticiones );          - Reproduce la animacion activa un numero de veces pasado como parametro, por defecto si no se indica nada el valor es Infinity.
+    .clipStop();                        - Detiene la animacion activa.
+    .clipSwitch( num, time );           - Transiciona entre la animacion actual y la indicada por num durante un time.
+    .clipIsPlaying();                   - Retorna true/false si la animacion actual esta reproduciendose.
+    .enableShadows( true/false );       - Actuva la proyeccion de sombras para este objeto.
+    .setCenter( cx, cy );               - Cambia el centro del grafico de este proceso.
+    .newGraph( width, height );         - Crea un grafico nuevo para este proceso con un ancho y alto indicados como parametros. Para cambiar el color del grafico se utiliza .tint( color );
+    .clearGraph();                      - Libera los recursos creados con newGraph().
+    .tint( color );                     - Tinta del color indicado el grafico del proceso.
+    .noTint();                          - Desactiva el tintando del grafico del proceso.
+    .distance3dTo( proc );              - Retorna la distancia entre el proceso actual y el proceso pasado por parametro.
+    .distance2dTo( proc );              - Retorna la distancia entre el proceso actual y el proceso pasado por parametro, sin tener en cuenta la coordenada Z.
+    .getRealPoint( x, y );              - Retorna la posicion del punto en el grafico del proceso. Esto es usado para colocar un grafico en la posicion concreta dentro de otro grafico.
+    .touched();                         - Retorna true/false si el puntero del mouse esta dentro del box del grafico del proceso.
+    .touchPersist();                    - Una vez detectada la colision con este proceso, touchPersists devolvera true mientras no se suelte el dedo de la pantalla, aunque se mueva. Usado en interfaces graficas.
+    .advance( dist, angle );            - Desplaza en XY un proceso indicando una distancia y un angulo de direccion.
+    .getDist( p1, p2 );                 - Retorna la distancia 2d entre dos prcesos pasados por parametros.
+    .getAngle( p1, p2, x2, y2 );        - Retorna el angulo entre:  con_1_parametro: entre este proceso y el proceso p1, con_2_parametros: entre el proceso p1 y el proceso p2, con_4_parametros: entre las coordenadas p1,p2 y las coordenadas x2,y2.
+    .setType( type );                   - Establece un tipo para el proceso actual.
+    .getType();                         - Retorna el tipo del proceso actual.
+    .clip( x, y, ancho, alto );         - Recorta el grafico del proceso actual en funcion de la mascara creada con estos parametros, es una ventana de visualizacion.
+    .noClip();                          - Desactiva el recorte del grafico del proceso.
+    .getDistance2d( a,b c,d );          - Mide la distancia 2d entre dos puntos XY.
+    .getDistance( a, b );               - Mide la distancia entre dos procesos.
+    .getAngle( a, b );                  - Mide el angulo entre dos procesos.
+
+class JoyStick( x, y, width, height )
+    - Esta clase es un joy on screen diseñado para ofrecer una forma simple y rapida de control tactil analogico y digital.
+    - Los parametros indican la posicion donde debe estar el joy y el tamaño de la zona tactil del sensor.
+    .setVisible( true/false );          - Enseña o esconde el sensor en pantalla.
+    .getAxis();                         - Retorna un vector con los valores del eje X y del eje Y analogicos.
+    .get();                             - Retorna toda la informacion del joystick, tanto analogica como digital.
+
+class ImagePixel( filename_image )
+    - Esta clase proporciona mecanismos para acceder a una imagen a nivel de pixel.
+    .ready:                             - Valdra true cuando se termine de cargar la imagen. Se utiliza para saber cuando el sistema esta ready realmente.
+    .getPixel( x, y );                  - Retorna el color de un pixel en la posicion x y pasada por parametros.
+    .getPixels();                       - Retorna un array con todos los colores/pixels de la imagen.
+    .getArea( x, y, width, height );    - Retorna un array con los colores/pixels de la imagen en la zona/area seleccionada.
+    .setColorMode( color_mode );        - Indica en que formato se van a obtener los colores. Formatos implementados: "HEX" o "RGBA". Este parametro se indica en forma de string, ejemplos de valores obtenidos: RGBA: [0-255, -255, 0-255, 0-255], HEX: 0xrrggbbaa.
+    .getWidth();                        - Retorna el ancho de la imagen cargada.
+    .getHeight();                       - Retorna el alto de la imagen cargada.
+
+class VideoCamera()
+    - Esta clase ofrece un mecanismo simple para acceder a la camara del sistema y obtener imagenes de ella.
+    .ready:                             - Valdra true cuando el sistema de acceso a la camara este inicializado correctamente.
+    .init( width, height );             - Inicializa la camara con un tamaño indicado por parametros.
+    .get();                             - Retorna el puntero a la imagen de la camara, pudiendo renderizarse en un proceso asignandola directamente con .setGraph();
+
+
+
+TO-DO:
+    class StringList();
+    
+    class DirectionalLight();
+    class PointLight();
+    
+    
+    include( filename );

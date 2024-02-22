@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GameLibZero [webGL game engine] - 2020/2023 - Luis lopez martinez.</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <style>
+        @font-face {
+            font-family: 'fnt';
+            src: url('data/Example_tutorial_00/fonts/fnt.ttf');
+        }
+        #usetFont{
+            font-family: 'fnt';
+            font-size: 0pt;
+        }
+    </style>
+
+    <body oncontextmenu="return false"></body>
+    <canvas id="myCanvas2d" onclick="requestFullScreen()"></canvas>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./library/three.module.min.js",
+                "three/addons/": "./library/"
+            }
+        }
+    </script>
+    <script type="module" src="data/Example_tutorial_00/game.js"></script>
+</body>
+
+</html>
