@@ -1985,25 +1985,15 @@ export function key(keyCode) {
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
-export function textInfo_(fnt, size, text) {
-    if (fnt == null) {
-        fnt = 'Arial';
-    }
-    const style = new PIXI.TextStyle({
-        fontFamily: fnt,
-        fontSize: size,
-        fill: 0xff1010,
-        align: 'center',
-    });
-    return PIXI.TextMetrics.measureText(text, style);
-}
 //-------
 export function textInfo(font, size, text) {
-    let fnt;
-    if (font == null) {
+    let fnt = font;
+    if (font === null) {
         fnt = 'fnt';
     } else {
-        fnt = font.family;
+        if (font != 'fnt') {
+            fnt = font.family;
+        }
     }
     const style = new PIXI.TextStyle({
         fontFamily: fnt,
@@ -4204,7 +4194,7 @@ export class EGUIbutton extends GameObject {
                     this.graph.width = this.w;
                     this.graph.height = this.h;
                 } else {
-                    let textInfo_ = textInfo("Arial", this.textSize, this.label);
+                    let textInfo_ = textInfo(this.font, this.textSize, this.label);
                     this.graph.width = textInfo_.width + 10;
                     this.graph.height = textInfo_.height + 10;
                 }
@@ -4480,7 +4470,7 @@ export class EGUIinputBox extends GameObject {
     frame() {
         switch (this.st) {
             case 0:
-                this.h = textInfo("Arial", this.textSize, "W").lineHeight + 4;
+                this.h = textInfo(this.font, this.textSize, "W").lineHeight + 4;
                 this.newGraph(this.w, this.h);
                 this.graphics = new PIXI.Graphics();
                 this.graphics.beginFill(0x000000);
@@ -4539,7 +4529,7 @@ export class EGUIinputBox extends GameObject {
 
 
                 this.text = keyboard_buffer;
-                if (textInfo("Arial", this.textSize, this.text).width > this.w - 4) {
+                if (textInfo(this.font, this.textSize, this.text).width > this.w - 4) {
                     keyboard_buffer = keyboard_buffer.slice(0, -1);
                 } else {
                     //..
@@ -4582,7 +4572,7 @@ export class EGUIinputBox extends GameObject {
                 }
 
                 if (!exists(GLZ_KEYBOARD)) {
-                    while (textInfo("Arial", this.textSize, this.text).width > this.w - 4) {
+                    while (textInfo(this.font, this.textSize, this.text).width > this.w - 4) {
                         this.text = this.text.slice(0, -1);
                     }
 
