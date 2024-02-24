@@ -168,6 +168,11 @@ export const GLZ_KEYBOARD_SPECIAL_KEY_TYPE = "_TYPE_GLZ_KEYBOARD_SPECIAL_KEY_";
 export let glz_sound_master_volume = 1;
 let _clock_ = new THREE.Clock();    // reloj interno para animaciones..
 let _delta_;                        // delta time del frame..
+
+String.prototype.replaceAt = function (index, replacement) {
+    return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+}
+
 //----------------------------------------------------------------------------------
 export function millis() {
     return performance.now();
