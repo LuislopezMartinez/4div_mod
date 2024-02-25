@@ -17,13 +17,13 @@ let snd = [];       // array de sonidos para waud..
 let mod = [];       // array de modelos 3d..
 let fnt = [];
 let idGame;         // puntero al proceso principal..
-const dataPath = "data/00_TUTORIAL_ClienteServidor_mmo/";
+const dataPath = "data/00_APP_Primaria_notas/";
 
 window.setup = function () {
-    setBackgroundColor(WHITE);          // color de fondo de pantalla..
+    setBackgroundColor(GRAY);          // color de fondo de pantalla..
     setFadingColor(0xffffff);           // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
-    setMode(1280 / 2, 720 / 2, false, true);    // define la resolucion grafica..
+    setMode(720 / 2, 1280 / 2, false, true);    // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
@@ -43,10 +43,10 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                //loader[0] = new LoadImages("data/00_TUTORIAL_ClienteServidor_mmo/images/", 0);
-                //loader[1] = new LoadSounds("data/00_TUTORIAL_ClienteServidor_mmo/sounds/", 0);
+                loader[0] = new LoadImages("data/00_APP_Primaria_notas/images/", 0);
+                //loader[1] = new LoadSounds("data/00_APP_Primaria_notas/sounds/", 0);
                 //let lista = [];
-                //lista.push("data/00_TUTORIAL_ClienteServidor_mmo/models/yourModelFilename.ext");
+                //lista.push("data/00_APP_Primaria_notas/models/yourModelFilename.ext");
                 //loader[2] = new LoadModels(lista);
 
                 ST = 20;
@@ -60,7 +60,7 @@ window.main = function () {
                 }
             }
             if (loaderReady) {
-                //img = loader[0].get();
+                img = loader[0].get();
                 //snd = loader[1].get();
                 //mod = loader[2].get();
                 fadeOff(500);
@@ -81,122 +81,229 @@ window.main = function () {
     }
 }
 //---------------------------------------------------------------------------------
-window.event_game_inNick = function () {
-    idGame.nick = glz._id_.get();
+window.event_game_botonCatalan = function () {
+    idGame.onClick_botonAsignatura("catalan");
+}
+window.event_game_botonCastellano = function () {
+    idGame.onClick_botonAsignatura("castellano");
+}
+window.event_game_botonIngles = function () {
+    idGame.onClick_botonAsignatura("ingles");
+}
+window.event_game_botonMatematicas = function () {
+    idGame.onClick_botonAsignatura("matematicas");
+}
+window.event_game_botonMedi = function () {
+    idGame.onClick_botonAsignatura("medi");
+}
+window.event_game_botonArtistica = function () {
+    idGame.onClick_botonAsignatura("artistica");
+}
+window.event_game_botonEducacionFisica = function () {
+    idGame.onClick_botonAsignatura("educacionFisica");
 }
 //---------------------------------------------------------------------------------
-window.event_game_sendButton = function () {
-    if (idGame.nick != "") {
-        idGame.onClick_sendButton();
-    } else {
-        alert("Debes introducir un nick valido!");
-    }
-
+window.event_game_botonAtras = function () {
+    idGame.onClick_botonAtras();
+}
+window.event_game_inCE_value = function () {
+    idGame.onClick_botonInCE_value();
 }
 //---------------------------------------------------------------------------------
-class Game extends GameObject {
+class Game extends Process {
     constructor() {
         super();
         this.st = 0;
-        this.nick = "";
-        this.controls = "0000";    // left right up down..
-        this.oldControls = "0000"; // left right up down..
+        this.asignaturaSeleccionada = undefined;
+        this.inNotaPonderada = undefined;
+
+        this.catalan = new glz.StringDict();
+        this.catalan.set("name", "catalan");
+        this.catalan.set("ce1", "5");
+        this.catalan.set("ce2", "5");
+        this.catalan.set("ce3", "10");
+        this.catalan.set("ce4", "25");
+        this.catalan.set("ce5", "25");
+        this.catalan.set("ce6", "5");
+        this.catalan.set("ce7", "5");
+        this.catalan.set("ce8", "5");
+        this.catalan.set("ce9", "10");
+        this.catalan.set("ce10", "5");
+
+        this.castellano = new glz.StringDict();
+        this.castellano.set("name", "castellano");
+        this.castellano.set("ce1", "5");
+        this.castellano.set("ce2", "5");
+        this.castellano.set("ce3", "10");
+        this.castellano.set("ce4", "25");
+        this.castellano.set("ce5", "25");
+        this.castellano.set("ce6", "5");
+        this.castellano.set("ce7", "5");
+        this.castellano.set("ce8", "5");
+        this.castellano.set("ce9", "10");
+        this.castellano.set("ce10", "5");
+
+        this.ingles = new glz.StringDict();
+        this.ingles.set("name", "ingles");
+        this.ingles.set("ce1", "5");
+        this.ingles.set("ce2", "10");
+        this.ingles.set("ce3", "10");
+        this.ingles.set("ce4", "10");
+        this.ingles.set("ce5", "15");
+        this.ingles.set("ce6", "10");
+        this.ingles.set("ce7", "10");
+        this.ingles.set("ce8", "10");
+        this.ingles.set("ce9", "10");
+        this.ingles.set("ce10", "10");
+
+        this.matematicas = new glz.StringDict();
+        this.matematicas.set("name", "matematicas");
+        this.matematicas.set("ce1", "5");
+        this.matematicas.set("ce2", "10");
+        this.matematicas.set("ce3", "10");
+        this.matematicas.set("ce4", "10");
+        this.matematicas.set("ce5", "15");
+        this.matematicas.set("ce6", "10");
+        this.matematicas.set("ce7", "10");
+        this.matematicas.set("ce8", "10");
+        this.matematicas.set("ce9", "10");
+        this.matematicas.set("ce10", "10");
+
+
+        this.medi = new glz.StringDict();
+        this.medi.set("name", "medi");
+        this.medi.set("ce1", "5");
+        this.medi.set("ce2", "10");
+        this.medi.set("ce3", "10");
+        this.medi.set("ce4", "10");
+        this.medi.set("ce5", "15");
+        this.medi.set("ce6", "10");
+        this.medi.set("ce7", "10");
+        this.medi.set("ce8", "10");
+        this.medi.set("ce9", "10");
+        this.medi.set("ce10", "10");
+
+        this.artistica = new glz.StringDict();
+        this.artistica.set("name", "artistica");
+        this.artistica.set("ce1", "5");
+        this.artistica.set("ce2", "10");
+        this.artistica.set("ce3", "10");
+        this.artistica.set("ce4", "10");
+        this.artistica.set("ce5", "15");
+        this.artistica.set("ce6", "10");
+        this.artistica.set("ce7", "10");
+        this.artistica.set("ce8", "10");
+        this.artistica.set("ce9", "10");
+        this.artistica.set("ce10", "10");
+
+        this.educacionFisica = new glz.StringDict();
+        this.educacionFisica.set("name", "educacionFisica");
+        this.educacionFisica.set("ce1", "5");
+        this.educacionFisica.set("ce2", "10");
+        this.educacionFisica.set("ce3", "10");
+        this.educacionFisica.set("ce4", "10");
+        this.educacionFisica.set("ce5", "15");
+        this.educacionFisica.set("ce6", "10");
+        this.educacionFisica.set("ce7", "10");
+        this.educacionFisica.set("ce8", "10");
+        this.educacionFisica.set("ce9", "10");
+        this.educacionFisica.set("ce10", "10");
+
     }
     initialize() {
+        new Write(null, 22, "CALCULADORA NOTAS PRIMARIA", CENTER, WIDTH / 2, 30, BLACK, 1);
+        new Write(null, 16, "Selecciona asignatura!", CENTER, WIDTH / 2, 50, BLUE, 1);
+
+        let c = new EGUIbutton(null, 22, "LLENGUA CATALANA", WIDTH / 2, 100, WHITE);
+        c.setEvent("event_game_botonCatalan");
+        c.setArea(300, 40);
+
+        c = new EGUIbutton(null, 22, "LLENGUA CASTELLANA", WIDTH / 2, 150, WHITE);
+        c.setEvent("event_game_botonCastellano");
+        c.setArea(300, 40);
+
+        c = new EGUIbutton(null, 22, "LLENGUA ESTRANGERA", WIDTH / 2, 200, WHITE);
+        c.setEvent("event_game_botonIngles");
+        c.setArea(300, 40);
+
+        c = new EGUIbutton(null, 22, "MATEMÀTIQUES", WIDTH / 2, 250, WHITE);
+        c.setEvent("event_game_botonMatematicas");
+        c.setArea(300, 40);
+
+        c = new EGUIbutton(null, 22, "MEDI SOCIAL-NATURAL", WIDTH / 2, 300, WHITE);
+        c.setEvent("event_game_botonMedi");
+        c.setArea(300, 40);
+
+        c = new EGUIbutton(null, 22, "EDUCACIÓ ARTÍSTICA", WIDTH / 2, 350, WHITE);
+        c.setEvent("event_game_botonArtistica");
+        c.setArea(300, 40);
+
+        c = new EGUIbutton(null, 22, "EDUCACIÓ FÍSICA", WIDTH / 2, 400, WHITE);
+        c.setEvent("event_game_botonEducacionFisica");
+        c.setArea(300, 40);
+
+        new Write(null, 18, "Programado por: Luis Lopez Martinez.", CENTER, WIDTH / 2, HEIGHT - 20, WHITE, 1);
+
         fadeOn(1000);
     }
     frame() {
         switch (this.st) {
             case 0:
-                glz.socketOpen("ws://localhost", 9080);
-                this.counter = 0;
-                this.st = 2;
-                break;
-            case 2:
-                switch (glz.socketStatus()) {
-                    case SOCKET_CONNECTED:
-                        alert("SOCKET_CONNECTED");
-                        this.st = 10;
-                        break;
-                    case SOCKET_CLOSED:
-                        alert("SOCKET_CLOSED");
-                        this.st = 4;
-                        break;
-                    case SOCKET_ERROR:
-                        alert("SOCKET_ERROR");
-                        this.st = 4;
-                        break;
-                }
+                // estado inicial..
+                // esperando a clickar un boton de asignatura..
                 break;
             case 10:
-                let c = new EGUIinputBox(null, 22, "Nick: ", "", 180, 20, 200);
-                c.setEvent("event_game_inNick");
-
-                c = new EGUIbutton(null, 20, "SEND!", 350, 20, WHITE);
-                c.setEvent("event_game_sendButton");
+                lockEGUI();
+                fadeOff(500);
                 this.st = 20;
                 break;
             case 20:
-                // limbo..
+                if (!glz.fading) {
+                    letMeAlone();
+                    new Write(null, 32, "Introduce valores para:", CENTER, WIDTH / 2, 55, YELLOW, 1);
+                    new Write(null, 32, this.asignaturaSeleccionada.get("name"), CENTER, WIDTH / 2, 90, WHITE, 1);
+                    let c = new EGUIgbutton(img[0], 32, 20, 0.8);
+                    c.setEvent("event_game_botonAtras");
+                    for (let i = 0; i < 10; i++) {
+                        let key = "ce" + str(i + 1) + " ";
+                        let c = new EGUIinputBox(null, 22, key, "", WIDTH / 2, 150 + i * 40, 150);
+                        c.setEvent("event_game_inCE_value");
+                    }
+
+                    this.inNotaPonderada = new EGUIinputBox(null, 32, "NOTA: ", "", WIDTH / 2, HEIGHT - 50, 100);
+
+                    fadeOn(1000);
+                    this.st = 30;
+                }
+                break;
+            case 30:
+
                 break;
             case 100:
-                // se ha hecho click en el boton send!..
-                let m = new glz.NetMessage();
-                m.add("update_nick");
-                m.add(this.nick);
-                m.send();
+                fadeOff(500);
                 this.st = 110;
                 break;
             case 110:
-                // esperando respuesta del servidor..
-                //..
+                if (!glz.fading) {
+                    letMeAlone();
+                    this.initialize();
+                    this.st = 0;
+                }
                 break;
             case 120:
-                letMeAlone();
-                this.st = 130;
-                break;
-            case 130:
-                // actualizar estado controles..
-                this.netSendControls();
+
                 break;
         }
     }
-    netSendControls() {
-        this.oldControls = this.controls;
-        this.controls = "0000";
-        if (key(_LEFT)) this.controls = this.controls.replaceAt(0, "1");
-        if (key(_RIGHT)) this.controls = this.controls.replaceAt(1, "1");
-        if (key(_UP)) this.controls = this.controls.replaceAt(2, "1");
-        if (key(_DOWN)) this.controls = this.controls.replaceAt(3, "1");
-        if (this.controls != this.oldControls) {
-            let m = new glz.NetMessage();
-            m.add("update_controls");
-            m.add(this.controls);
-            m.send();
-        }
+    onClick_botonInCE_value() {
+
     }
-    onClick_sendButton() {
+    onClick_botonAtras() {
         this.st = 100;
     }
-    RCV_update_nick() {
-        this.st = 120;
-    }
-}
-//---------------------------------------------------------------------------------
-window.onNetEvent = function (msg) {
-    console.log(msg);
-    switch (msg[0]) {
-        case "update_nick":
-            if (msg[1] == "ok") {
-                idGame.RCV_update_nick();
-            }
-            break;
-        case "2":
-
-            break;
-        default:
-            console.log("ERROR: [" + msg[0] + "] NET COMMAND NOT RECOGNIZED!");
-            break;
+    onClick_botonAsignatura(value) {
+        this.asignaturaSeleccionada = this[value];
+        this.st = 10;
     }
 }
 //---------------------------------------------------------------------------------

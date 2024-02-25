@@ -240,7 +240,17 @@ export function int(floatvalue) {
 }
 //-------
 export function isInteger(value) {
-    return Number.isInteger(value);
+    //return Number.isInteger(value);
+    return Number(value) === value && value % 1 === 0;
+}
+export function isFloat(value) {
+    return Number(value) === value && value % 1 !== 0;
+}
+export function isNumber(value) {
+    if (isInteger(value) || isFloat(value)) {
+        return true;
+    }
+    return false;
 }
 //-------
 // str 2 boolean!
@@ -4991,3 +5001,158 @@ export function NetMessage(netWsocket = _glz_socket) {
         netWsocket.send(this.buffer);
     }
 }
+//---------------------------------------------------------------------------------
+export class StringDict {
+    constructor() {
+        this.delimitier = "~";
+        this.data = [];
+    }
+    size() {
+        return this.data.length;
+    }
+    clear() {
+        this.data = [];
+    }
+    keys() {
+        let keys = new StringList();
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            keys.add(param[0]);
+        }
+        return keys;
+    }
+    keyArray() {
+        let keys = new StringList();
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            keys.add(param[0]);
+        }
+        return keys;
+    }
+    values() {
+        let values = new StringList();
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            values.add(param[1]);
+        }
+        return values;
+    }
+    valueArray() {
+        let values = new StringList();
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            values.add(param[1]);
+        }
+        return values;
+    }
+    get(key) {
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            if (param[0] == key) {
+                return param[1];
+            }
+        }
+        return null;
+    }
+    set(key, value) {
+        if (key == "") {
+            return;
+        }
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            if (param[0] == key) {
+                param[1] = value;
+                this.data[i] = param[0] + this.delimitier + param[1];
+                return;
+            }
+        }
+        // en este punto si no he retornado ya es por que la key no existe..
+        // la creo nueva..
+        this.data.push(key + this.delimitier + value);
+    }
+    hasKey(key) {
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            if (param[0] == key) {
+                return true;
+            }
+        }
+        return false;
+    }
+    remove() {
+        for (let i = 0; i < this.data.length; i++) {
+            let param = this.data[i].split(this.delimitier);
+            if (param[0] == key) {
+                this.data.splice(i, 1);
+                return true;
+            }
+        }
+        return false;
+    }
+    sortKeys() {
+        this.data.sort();
+    }
+    sortKeysReverse() {
+        //..
+    }
+    sortValues() {
+        //..
+    }
+    sortValuesReverse() {
+        //..
+    }
+}
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+export class TableRow {
+    constructor() {
+        this.uid = 0;
+        this.data = [];
+        this.columnNames = [];
+    }
+    addColumn(columnName) {
+        this.columnNames.push(columnName);
+    }
+    getColumnNames() {
+        return this.columnNames;
+    }
+    getColumnCount() {
+        return this.columnNames.length;
+    }
+    getRowCount() {
+        return this.data.length;
+    }
+    addRow() {
+        let uid = this.uid++;
+        let newElement = [];
+        newElement.uid = uid;
+        for (let i = 0; i < this.columnNames.length; i++) {
+            newElement[this.columnNames[i]] = "";
+        }
+        this.data.push(newElement);
+        return uid
+    }
+    setString(id, columnName, str) {
+        for (let i = 0; i < this.data.length; i++) {
+            if (this.data[i].uid == id) {
+                this.data[i][columnName] = str;
+            }
+        }
+    }
+    getString(id, columnName) {
+        for (let i = 0; i < this.data.length; i++) {
+            if (this.data[i].uid == id) {
+                return this.data[i][columnName];
+            }
+        }
+    }
+    findRow(columnName, key) {
+        for (let i = 0; i < this.data.length; i++) {
+            if (this.data[i][columnName] == key) {
+                return this.data[i].uid;
+            }
+        }
+        return null;
+    }
+}
+//---------------------------------------------------------------------------------
