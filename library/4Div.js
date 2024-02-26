@@ -2504,23 +2504,23 @@ export function screenDrawSprite(texture_path, x = 0, y = 0, z = 0, anglex = 0, 
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
-function EVENT_Teclado_teclaEspecial_return() {
+window.EVENT_Teclado_teclaEspecial_return = function () {
     GLZ_KEYBOARD.onClick_teclaEspecial("return");
 }
 //-------
-function EVENT_Teclado_teclaEspecial_123() {
+window.EVENT_Teclado_teclaEspecial_123 = function () {
     GLZ_KEYBOARD.onClick_teclaEspecial("123");
 }
 //-------
-function EVENT_Teclado_teclaEspecial_del() {
+window.EVENT_Teclado_teclaEspecial_del = function () {
     GLZ_KEYBOARD.onClick_teclaEspecial("del");
 }
 //-------
-function EVENT_Teclado_teclaEspecial_mays() {
+window.EVENT_Teclado_teclaEspecial_mays = function () {
     GLZ_KEYBOARD.onClick_teclaEspecial("mays");
 }
 //-------
-function EVENT_Teclado_tecla() {
+window.EVENT_Teclado_tecla = function () {
     GLZ_KEYBOARD.onClick_key(_id_.label.text);
 }
 //-------
@@ -2661,7 +2661,7 @@ class Teclado extends GameObject {
             let vec = this.getRealPoint(xx[i], yy);
             let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.size);
             b.z = this.z + 1;
-            b.setLabel(null, this.textKeysSize, this.keys_lower[i], BLACK);
+            b.setLabel(null, this.textKeysSize, this.keys_lower[i], CENTER, 0, 0, BLACK);
             b.setEvent("EVENT_Teclado_tecla");
             b.setType(GLZ_KEYBOARD_NORMAL_KEY_TYPE);
         }
@@ -2671,7 +2671,7 @@ class Teclado extends GameObject {
             let vec = this.getRealPoint(xx[i], yy);
             let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.size);
             b.z = this.z + 1;
-            b.setLabel(null, this.textKeysSize, this.keys_lower[xx.length + i], BLACK);
+            b.setLabel(null, this.textKeysSize, this.keys_lower[xx.length + i], CENTER, 0, 0, BLACK);
             b.setEvent("EVENT_Teclado_tecla");
             b.setType(GLZ_KEYBOARD_NORMAL_KEY_TYPE);
         }
@@ -2682,7 +2682,7 @@ class Teclado extends GameObject {
             let vec = this.getRealPoint(xx[i], yy);
             let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.size);
             b.z = this.z + 1;
-            b.setLabel(null, this.textKeysSize, this.keys_lower[20 + i], BLACK);
+            b.setLabel(null, this.textKeysSize, this.keys_lower[20 + i], CENTER, 0, 0, BLACK);
             b.setEvent("EVENT_Teclado_tecla");
             b.setType(GLZ_KEYBOARD_NORMAL_KEY_TYPE);
         }
@@ -2690,7 +2690,7 @@ class Teclado extends GameObject {
         let vec = this.getRealPoint(187, 235);
         let b = new EGUIgbutton(this.img[4], vec.x, vec.y, this.size);
         b.z = this.z + 1;
-        b.setLabel(null, this.textKeysSize, " space ", BLACK);
+        b.setLabel(null, this.textKeysSize, " space ", CENTER, 0, 0, BLACK);
         b.setEvent("EVENT_Teclado_tecla");
         b.setType(GLZ_KEYBOARD_NORMAL_KEY_TYPE);
     }
@@ -4082,6 +4082,7 @@ export class EGUIcheckButton extends GameObject {
         this.type = "EGUI_ELEMENT";
         this.label = undefined;
         this.locked = false;
+        this.disabled = false;
     }
     initialize() {
         this.newGraph(this.w, this.h);
@@ -4097,7 +4098,7 @@ export class EGUIcheckButton extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                if (this.touched() && !this.locked && !lockUi) {
+                if (this.touched() && !this.locked && !lockUi && !this.disabled) {
                     lockUi = true;
                     this.value = !this.value;
                     if (this.value) {
@@ -4125,6 +4126,9 @@ export class EGUIcheckButton extends GameObject {
             this.label.x = this.x + this.offx_label;
             this.label.y = this.y + this.offy_label;
         }
+    }
+    setDisable(value) {
+        this.disabled = value;
     }
     setValue(value) {
         this.value = value;
@@ -4184,6 +4188,7 @@ export class EGUIbutton extends GameObject {
         this.tint2 = 0xff00ff;
         this.eventName = "NULL_event";
         this.locked = false;
+        this.disabled = false;
         this.type = "EGUI_ELEMENT";
         this.graphics = undefined;
         this.z = 2048;
@@ -4230,7 +4235,7 @@ export class EGUIbutton extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                if (this.touched() && !this.locked && !lockUi) {
+                if (this.touched() && !this.locked && !lockUi && !this.disabled) {
                     lockUi = true;
                     this.tint(this.tint2);
                     this.st = 20;
@@ -4245,6 +4250,9 @@ export class EGUIbutton extends GameObject {
                 }
                 break;
         }
+    }
+    setDisable(value) {
+        this.disabled = value;
     }
     setColors(colorA, colorB) {
         this.tint1 = colorA;
@@ -4321,6 +4329,7 @@ export class EGUIgbutton extends GameObject {
         this.tint1 = 0xff00ff;
         this.eventName = "NULL_event";
         this.locked = false;
+        this.disabled = false;
         this.type = "EGUI_ELEMENT";
         this.z = 2048;
         this.oldSt = 0; // permite guardar el estado actual antes de un santo de estado para volver a
@@ -4336,7 +4345,7 @@ export class EGUIgbutton extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                if (this.touched() && !this.locked && !lockUi) {
+                if (this.touched() && !this.locked && !lockUi && !this.disabled) {
                     lockUi = true;
                     if (this.only1gr == true) {
                         this.tint(this.tint1);
@@ -4368,6 +4377,9 @@ export class EGUIgbutton extends GameObject {
             this.label.x = this.x + this.offx_label;
             this.label.y = this.y + this.offy_label;
         }
+    }
+    setDisable(value) {
+        this.disabled = value;
     }
     setGraphics(gr) {
         this.only1gr = false;
@@ -4465,6 +4477,7 @@ export class EGUIinputBox extends GameObject {
         this.tint2 = 0xffffff;
         this.eventName = "NULL_event";
         this.locked = false;
+        this.disabled = false;
         this.type = "EGUI_ELEMENT";
         this.tint1 = 0x90a4ae;
         this.tint2 = 0xffffff;
@@ -4475,6 +4488,7 @@ export class EGUIinputBox extends GameObject {
         this.z = 2048;
         this.focus = false;
         this.prompt_buffer = null;
+
     }
     getFocus() {
         return this.focus;
@@ -4510,7 +4524,7 @@ export class EGUIinputBox extends GameObject {
                 break;
             case 10:
                 this.graphics.zIndex = this.z - 1;
-                if ((this.touched() && !this.locked && !lockUi) || !this.locked && !lockUi && this.focus) {
+                if ((this.touched() && !this.locked && !lockUi && !this.disabled) || !this.locked && !lockUi && this.focus && !this.disabled) {
                     if (window.navigator.maxTouchPoints >= 1) {
                         lockUi = true;
                         this.prompt_buffer = null;
@@ -4618,6 +4632,9 @@ export class EGUIinputBox extends GameObject {
                 break;
         }
     }
+    setDisable(value) {
+        this.disabled = value;
+    }
     setLabelColor(labelColor) {
         this.labelColor = labelColor;
     }
@@ -4642,6 +4659,10 @@ export class EGUIinputBox extends GameObject {
     }
     get() {
         return this.text;
+    }
+    set(newText) {
+        this.text = newText;
+        this.idText.text = this.text;
     }
     setEvent(eventName) {
         this.eventName = eventName;

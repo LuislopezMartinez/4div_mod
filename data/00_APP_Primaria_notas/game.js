@@ -107,7 +107,7 @@ window.event_game_botonAtras = function () {
     idGame.onClick_botonAtras();
 }
 window.event_game_inCE_value = function () {
-    idGame.onClick_botonInCE_value();
+    idGame.onClick_botonInCE_value(glz._id_);
 }
 //---------------------------------------------------------------------------------
 class Game extends Process {
@@ -116,6 +116,7 @@ class Game extends Process {
         this.st = 0;
         this.asignaturaSeleccionada = undefined;
         this.inNotaPonderada = undefined;
+        this.inputs_id = [];
 
         this.catalan = new glz.StringDict();
         this.catalan.set("name", "catalan");
@@ -268,17 +269,21 @@ class Game extends Process {
                         let key = "ce" + str(i + 1) + " ";
                         let c = new EGUIinputBox(null, 22, key, "", WIDTH / 2, 150 + i * 40, 150);
                         c.setEvent("event_game_inCE_value");
+                        this.inputs_id.push(c);
                     }
 
                     this.inNotaPonderada = new EGUIinputBox(null, 32, "NOTA: ", "", WIDTH / 2, HEIGHT - 50, 100);
+                    this.inNotaPonderada.setDisable(true);
 
                     fadeOn(1000);
                     this.st = 30;
                 }
                 break;
             case 30:
-
+                //..
                 break;
+
+
             case 100:
                 fadeOff(500);
                 this.st = 110;
@@ -286,6 +291,7 @@ class Game extends Process {
             case 110:
                 if (!glz.fading) {
                     letMeAlone();
+                    this.inputs_id = [];
                     this.initialize();
                     this.st = 0;
                 }
@@ -295,8 +301,35 @@ class Game extends Process {
                 break;
         }
     }
-    onClick_botonInCE_value() {
+    onClick_botonInCE_value(id) {
+        if (!glz.isNumber(parseFloat(id.get()))) {
+            id.setText("");
+        } else {
+            if (parseFloat(id.get()) > 10) {
+                id.setText("");
+            }
+            if (parseFloat(id.get()) < 0) {
+                id.setText("");
+            }
+        }
 
+        //console.log(this.asignaturaSeleccionada);
+        let notaFinal = 0;
+        let sumaPesos = 0;
+        for (let i = 0; i < this.inputs_id.length; i++) {
+            if (id.get() != "") {
+                let key = "ce" + str(i + 1);
+                let notaParcial = parseFloat(this.inputs_id[i].get());
+                let peso = parseFloat(this.asignaturaSeleccionada.get(key));
+
+                if (glz.isNumber(notaParcial * peso)) {
+                    notaFinal += notaParcial * peso;
+                    sumaPesos += peso;
+                }
+            }
+        }
+        notaFinal /= sumaPesos;
+        this.inNotaPonderada.setText(notaFinal.toFixed(2));
     }
     onClick_botonAtras() {
         this.st = 100;
