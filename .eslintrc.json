@@ -17,6 +17,10 @@
         "no-case-declarations": [
             "off",
             {}
+        ],
+        "no-prototype-builtins": [
+            "off",
+            {}
         ]
     }
 }

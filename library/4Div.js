@@ -1366,7 +1366,7 @@ export class GameObject {
         this._cx = cx;
         this._cy = cy;
         if (this.mesh != undefined) {
-            this.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(x, y, z));
+            this.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(this.x, this.y, this.z));
         }
     }
     setGraph(texture) {
@@ -1750,8 +1750,8 @@ window.onload = function () {
     window.setup();
 
     resizeGame();
-    Waud.init();
-    Waud.autoMute();
+    window.Waud.init();
+    window.Waud.autoMute();
 
     initTouch();
     mouse = new Mouse();
@@ -2905,7 +2905,7 @@ export class LoadSounds extends GameObject {
                     } else {
                         this.name = str(this.pos);
                     }
-                    this.dat[this.pos] = new WaudSound(this.path + this.name + this.ext, { autoplay: false, loop: false, volume: 0.5 });
+                    this.dat[this.pos] = new window.WaudSound(this.path + this.name + this.ext, { autoplay: false, loop: false, volume: 0.5 });
                     this.pos++;
                 } else {
                     // check if load all files completed..
