@@ -19,6 +19,10 @@ let fnt = [];
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/00_TUTORIAL_ClienteServidor_mmo/";
 
+let netClients = [];
+const NET_PLAYER_MAX_DISTANCE_AUTO_ADJUST_POSITION = 50;    // si el player en red recive su posicion y esta a mas de esta distancia.. no se interpolara la posicion, se ajustara de una vez.
+const NET_PLAYER_MIN_DISTANCE_AUTO_ADJUST_POSITION = 10;      // si estas muy cerca del destino te colocas ya ahi.. evita pequeños ajustes super lentos..
+
 window.setup = function () {
     setBackgroundColor(WHITE);          // color de fondo de pantalla..
     setFadingColor(0xffffff);           // color del fade de pantalla..
@@ -120,44 +124,37 @@ class Game extends GameObject {
                         break;
                     case SOCKET_CLOSED:
                         alert("SOCKET_CLOSED");
-                        this.st = 4;
+                        this.st = 0;
                         break;
                     case SOCKET_ERROR:
                         alert("SOCKET_ERROR");
-                        this.st = 4;
+                        this.st = 0;
                         break;
                 }
                 break;
             case 10:
-                let c = new EGUIinputBox(null, 22, "Nick: ", "", 180, 20, 200);
-                c.setEvent("event_game_inNick");
-
-                c = new EGUIbutton(null, 20, "SEND!", 350, 20, WHITE);
-                c.setEvent("event_game_sendButton");
-                this.st = 20;
-                break;
-            case 20:
-                // limbo..
-                break;
-            case 100:
-                // se ha hecho click en el boton send!..
-                let m = new glz.NetMessage();
-                m.add("update_nick");
-                m.add(this.nick);
-                m.send();
-                this.st = 110;
-                break;
-            case 110:
-                // esperando respuesta del servidor..
-                //..
-                break;
-            case 120:
-                letMeAlone();
-                this.st = 130;
-                break;
-            case 130:
                 // actualizar estado controles..
                 this.netSendControls();
+                this.checkConnectionStatus();
+                break;
+        }
+    }
+    checkConnectionStatus() {
+        switch (glz.socketStatus()) {
+            case SOCKET_CONNECTED:
+                //..
+                break;
+            case SOCKET_CLOSED:
+                alert("SOCKET_CLOSED");
+                //window.location.reload();
+                letMeAlone();
+                this.st = 0;
+                break;
+            case SOCKET_ERROR:
+                alert("SOCKET_ERROR");
+                //window.location.reload();
+                letMeAlone();
+                this.st = 0;
                 break;
         }
     }
@@ -181,19 +178,130 @@ class Game extends GameObject {
     RCV_update_nick() {
         this.st = 120;
     }
+
+}
+//---------------------------------------------------------------------------------
+class NetClient extends GameObject {
+    constructor(id, x, y) {
+        super();
+        this.st = 0;
+        this.remoteId = id;
+        this.offset = new glz.Vector2(0, 0);        // posicion en el mundo donde se muestra animado..
+        this.RCVoffset = new glz.Vector2(x, y);   // posicion en el mundo donde esta realmente..
+        netClients.push(this);
+    }
+    initialize() {
+
+    }
+    finalize() {
+
+    }
+    frame() {
+        switch (this.st) {
+            case 0:
+                this.newGraph(10, 10);
+                this.tint(RED);
+                this.st = 10;
+                break;
+            case 10:
+                this.mover();
+                this.old_x = this.offset.x;
+                this.old_y = this.offset.y;
+                //console.log(this.x, this.y);
+                break;
+            case 20:
+
+                break;
+            case 30:
+
+                break;
+        }
+    }
+    mover() {
+        let dx = this.RCVoffset.x - this.offset.x;
+        let dy = this.RCVoffset.y - this.offset.y;
+        if (dx > 0) {
+            this.mirrorx = false;
+        } else if (dx < 0) {
+            this.mirrorx = true;
+        }
+        if (Math.abs(dx) > NET_PLAYER_MAX_DISTANCE_AUTO_ADJUST_POSITION) {
+            this.offset.x += dx;
+        } else {
+            if (Math.abs(dx) < NET_PLAYER_MIN_DISTANCE_AUTO_ADJUST_POSITION) {
+                this.offset.x += dx / 10;
+            } else {
+                this.offset.x += dx / 20;
+            }
+        }
+        if (Math.abs(dy) > NET_PLAYER_MAX_DISTANCE_AUTO_ADJUST_POSITION) {
+            this.offset.y += dy;
+        } else {
+            if (Math.abs(dy) < NET_PLAYER_MIN_DISTANCE_AUTO_ADJUST_POSITION) {
+                this.offset.y += dy / 10;
+            } else {
+                this.offset.y += dy / 20;
+            }
+        }
+        //this.x = this.offset.x - idCam.offset.x;
+        //this.y = this.offset.y - idCam.offset.y;
+        this.x = this.offset.x;
+        this.y = this.offset.y;
+    }
+    RCVNetPosition(x, y) {
+        this.RCVoffset.x = x;
+        this.RCVoffset.y = y;
+    }
 }
 //---------------------------------------------------------------------------------
 window.onNetEvent = function (msg) {
     console.log(msg);
     switch (msg[0]) {
-        case "update_nick":
-            if (msg[1] == "ok") {
-                idGame.RCV_update_nick();
+        case "playerArround_enter":
+            let id = 0;
+            let x = 0;
+            let y = 0;
+            for (let i = 1; i < msg.length; i++) {
+                let params = msg[i].split(":");
+                switch (params[0]) {
+                    case "id":
+                        id = params[1];
+                        break;
+                    case "x":
+                        x = params[1];
+                        break;
+                    case "y":
+                        y = params[1];
+                        break;
+                }
+            }
+            new NetClient(id, x, y);    // creo proceso player en red con su ID en el servidor y el nick..
+            break;
+
+        case "playerArround_leave":
+            for (let i = 0; i < netClients.length; i++) {
+                if (netClients[i].remoteId == msg[1].split(":")[1]) {
+                    signal(netClients[i], s_kill);
+                }
             }
             break;
-        case "2":
 
+        case "playerPosition":
+            for (let i = 0; i < netClients.length; i++) {
+                if (netClients[i].remoteId == msg[1].split(":")[1]) {
+                    netClients[i].RCVNetPosition(msg[2].split(":")[1], msg[3].split(":")[1]);
+                }
+            }
             break;
+
+        case "playerDisconnect":
+            for (let i = 0; i < netClients.length; i++) {
+                if (netClients[i].remoteId == msg[1]) {
+                    signal(netClients[i], s_kill);
+                }
+            }
+            break;
+
         default:
             console.log("ERROR: [" + msg[0] + "] NET COMMAND NOT RECOGNIZED!");
             break;
