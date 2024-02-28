@@ -714,6 +714,12 @@ export class GameObject {
         return this.material;
     }
     //------------------------------------------------------------
+    setTextureOffet(off_x, off_y) {
+        if (this.material.map != undefined) {
+            this.material.map.offset.set(off_x, off_y);
+        }
+    }
+    //------------------------------------------------------------
     lookAt() {
         console.log("TO DO");
     }

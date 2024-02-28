@@ -23,7 +23,7 @@ window.setup = function () {
     setBackgroundColor(BLACK);          // color de fondo de pantalla..
     setFadingColor(BLACK);           // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
-    setMode(1280 / 2, 720 / 2, false, false);   // define la resolucion grafica..
+    setMode(1280, 720, false, false);   // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
@@ -44,7 +44,7 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 2);
+                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 4);
                 loader[1] = new LoadSounds("data/APP_GAME_SNATCHER_FC3/sounds/", 4);
                 let list = [];
                 list.push("data/APP_GAME_SNATCHER_FC3/fonts/MSX-Screen0.ttf");
@@ -88,7 +88,7 @@ window.main = function () {
 }
 
 //---------------------------------------------------------------------------------
-class Game extends Process {
+class Game extends GameObject {
     constructor() {
         super();
         this.st = 0;
@@ -104,7 +104,8 @@ class Game extends Process {
     frame() {
         switch (this.st) {
             case 0:
-                if (!soundIsPlaying(snd[0])) {
+                if (!soundIsPlaying(snd[0]) || glz.mouse.left) {
+                    soundStop(snd[0]);
                     fadeOff(1000);
                     this.st = 10;
                 }
@@ -129,6 +130,9 @@ class Game extends Process {
                     this.dialog.add("como por ejemplo Aldus PageMaker, el cual incluye versiones");
                     this.dialog.add("de Lorem Ipsum.");
 
+                    new Suelo();
+
+
                     fadeOn(1000);
                     this.st = 20;
                 }
@@ -140,7 +144,32 @@ class Game extends Process {
         }
     }
 }
-
+//---------------------------------------------------------------------------------
+class Suelo extends GameObject {
+    constructor() {
+        super();
+        this.st = 0;
+        this.counter = 0;
+    }
+    frame() {
+        switch (this.st) {
+            case 0:
+                this.createMaterial(TEXTURED, dataPath + "images/004.png", true);
+                this.createPlane(100, 100);
+                //console.log(this.material.map);
+                this.st = 10;
+                break;
+            case 10:
+                this.counter -= 0.01;
+                // animateUV();
+                this.setTextureOffet(-this.counter, this.counter);
+                this.x++;
+                break;
+            case 20:
+                break;
+        }
+    }
+}
 //---------------------------------------------------------------------------------
 class DialogBox extends GameObject {
     constructor() {
@@ -152,8 +181,8 @@ class DialogBox extends GameObject {
         this.idTexts = [];
         this.cursor;
         this.fnt = fnt[2];
-        this.textSize = 10;
-        this.interline = this.textSize + 4;
+        this.textSize = 20;
+        this.interline = this.textSize + 10;
         this.eventName = "";
     }
     initialize() {
@@ -165,7 +194,6 @@ class DialogBox extends GameObject {
         for (let i = 0; i < this.linesToShow; i++) {
             this.idTexts.push(new Write(this.fnt, this.textSize, "", RIGHT, vec.x + 5, vec.y + this.interline / 2 + this.interline * i, WHITE, 1));
         }
-        console.log(this.graph);
         this.cursor = new Write(this.fnt, this.textSize, ">>", LEFT, vec.x + this.graph._width - 2, vec.y + this.graph._height - 2 - this.textSize / 2, YELLOW, 1);
         this.cursor.visible = false;
     }
@@ -179,7 +207,6 @@ class DialogBox extends GameObject {
         this.data.push(str);
     }
     frame() {
-        console.log(this.st);
         switch (this.st) {
             case 0:
                 if (this.lsa < this.linesToShow) {
