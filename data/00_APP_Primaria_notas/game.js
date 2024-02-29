@@ -23,7 +23,7 @@ window.setup = function () {
     setBackgroundColor(GRAY);          // color de fondo de pantalla..
     setFadingColor(0xffffff);           // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
-    setMode(720 / 2, 1280 / 2, true, true);    // define la resolucion grafica..
+    setMode(720 / 2, 1280 / 2, false, true);    // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..

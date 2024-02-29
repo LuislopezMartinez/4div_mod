@@ -535,7 +535,11 @@ export class GameObject {
                 this.y = this.body.position.y;
                 this.z = this.body.position.z;
             } else {
-                this.mesh.rotation.set(radians(this.anglex), radians(this.angley), radians(this.angle));
+                if (this.mesh.type == "Sprite") {
+                    this.mesh.material.rotation = radians(this.angle);
+                } else {
+                    this.mesh.rotation.set(radians(this.anglex), radians(this.angley), radians(this.angle));
+                }
             }
 
             if (this.mixer) {
@@ -580,11 +584,6 @@ export class GameObject {
         scene.add(this.mesh);
     }
     //------------------------------------------------------------
-    /*
-    createPlane(width_, depht_, wparts = 1, dparts = 1) {
-        this.createBox(width_, 1, depht_, wparts, 1, dparts);
-    }
-    */
     createPlane(width_, depht_, wparts = 1, dparts = 1) {
         this.model = false;
         this.geometry = new THREE.PlaneGeometry(width_, depht_, wparts, dparts);
@@ -710,13 +709,6 @@ export class GameObject {
             case TEXTURED:
                 {
                     let texture;
-                    /*
-                    if (col instanceof THREE.Texture) {
-                        texture = col;
-                    } else {
-                        texture = new THREE.TextureLoader().load(col);
-                    }
-                    */
                     if (col instanceof THREE.Texture) {
                         texture = col;
                     } else if (col instanceof PIXI.Texture) {
@@ -730,6 +722,7 @@ export class GameObject {
                     }
                     this.material = new THREE.MeshPhongMaterial({
                         map: texture,
+                        transparent: true,
                         //specular: 0xffffff,
                         //shininess: 30,
                     });

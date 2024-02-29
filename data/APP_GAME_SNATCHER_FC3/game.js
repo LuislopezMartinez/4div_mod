@@ -20,7 +20,7 @@ let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 
 window.setup = function () {
-    setBackgroundColor(BLACK);          // color de fondo de pantalla..
+    setBackgroundColor(0x333333);          // color de fondo de pantalla..
     setFadingColor(BLACK);           // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
     setMode(1280, 720, false, false);   // define la resolucion grafica..
@@ -130,10 +130,11 @@ class Game extends GameObject {
                     this.dialog.add("como por ejemplo Aldus PageMaker, el cual incluye versiones");
                     this.dialog.add("de Lorem Ipsum.");
 
-                    new Suelo();
+                    //new Suelo();
 
-                    //new Humo(0);
-                    //new Humo(1);
+                    //for (let i = 0; i < 10; i++) {
+                    new Humo();
+                    //}
 
                     fadeOn(1000);
                     this.st = 20;
@@ -148,28 +149,24 @@ class Game extends GameObject {
 }
 //---------------------------------------------------------------------------------
 class Humo extends GameObject {
-    constructor(mode) {
+    constructor() {
         super();
-        this.mode = mode;
+        this.value = random(0.25);
     }
     initialize() {
-
-        this.createMaterial(TEXTURED, img[3]);
-        if (this.mode == 0) {
-            this.x = 50;
-            this.y = 0;
-            this.createPlane(100, 100);
-        } else {
-            this.x = -50;
-            this.y = 0;
-            this.createPlane2(100, 100);
-        }
+        this.size = 50;
+        this.x = random(-50, 50);
+        this.y = random(-50, 50);
+        //this.createMaterial(TEXTURED, img[3]);
+        //this.createPlane(100, 100);
+        this.createSprite(img[3]);
+        console.log(this.mesh);
     }
     finalize() {
 
     }
     frame() {
-        //this.angle += random(0.25);
+        this.angle += this.value;
     }
 }
 //---------------------------------------------------------------------------------
