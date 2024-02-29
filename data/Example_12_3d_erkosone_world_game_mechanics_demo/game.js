@@ -206,7 +206,7 @@ class Intro_Suelo extends GameObject {
             b.size = 6;
 
         }
-
+        this.anglex = -90;
         this.createMaterial(TEXTURED, "data/Example_12_3d_erkosone_world_game_mechanics_demo/images/textures/checkerboard.jpg", true);
         this.createPlane(200, 200);
         this.createBody(TYPE_PLANE);
@@ -753,7 +753,7 @@ class Personaje2 extends GameObject {
                 this.action = "stand";
             }
         } else {
-            if(this.flag_sonido_salto==false){
+            if (this.flag_sonido_salto == false) {
                 if (key(_UP) || key(_DOWN) || key(_LEFT) || key(_RIGHT)) {
                     this.action = "run";
                 } else {
@@ -763,13 +763,13 @@ class Personaje2 extends GameObject {
         }
         switch (this.action) {
             case "jump":
-                this.clipSwitch(2, 500, 1);
+                this.clipSwitch(2, 100, 1);
                 break;
             case "run":
-                this.clipSwitch(1, 500, Infinity);
+                this.clipSwitch(1, 100, Infinity);
                 break;
             case "stand":
-                this.clipSwitch(0, 500, Infinity);
+                this.clipSwitch(0, 100, Infinity);
                 break;
         }
 
@@ -875,6 +875,7 @@ class Plano extends GameObject {
         this.h = h;
     }
     initialize() {
+        this.anglex = -90;
         this.createMaterial(TEXTURED, this.textura, true, 40);
         this.createPlane(this.w, this.h);
         this.createBody(TYPE_PLANE);

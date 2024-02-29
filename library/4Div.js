@@ -103,6 +103,7 @@ export const TYPE_BOX = 18;
 export const TYPE_SPHERE = 19;
 export const TYPE_PLANE = 20;
 export const TYPE_CYLINDER = 21;
+export const TYPE_PLANE_2 = 22;
 
 export let keyCode = undefined;
 export const _UP = 38;
@@ -553,8 +554,10 @@ export class GameObject {
         let texture;
         if (img_ instanceof THREE.Texture) {
             texture = img_;
+        } else if (img_ instanceof PIXI.Texture) {
+            texture = new THREE.TextureLoader().load(img_.textureCacheIds[0]);  // uso normbre de archivo guardado en textura de pixi..
         } else {
-            texture = new THREE.TextureLoader().load(img_);
+            texture = new THREE.TextureLoader().load(img_); // uso nombre de archivo directamente..
         }
         //texture = new THREE.TextureLoader().load(img_);
         this.material = new THREE.SpriteMaterial({ map: texture, color: WHITE });
@@ -577,8 +580,23 @@ export class GameObject {
         scene.add(this.mesh);
     }
     //------------------------------------------------------------
+    /*
     createPlane(width_, depht_, wparts = 1, dparts = 1) {
         this.createBox(width_, 1, depht_, wparts, 1, dparts);
+    }
+    */
+    createPlane(width_, depht_, wparts = 1, dparts = 1) {
+        this.model = false;
+        this.geometry = new THREE.PlaneGeometry(width_, depht_, wparts, dparts);
+        if (this.material == undefined) {
+            this.material = new THREE.MeshNormalMaterial();
+        }
+        this.material.side = THREE.DoubleSide;
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        this.mesh.visible = this.visible;
+        this.mesh.updateMatrix();
+        this.mesh.id_ = this.id;
+        scene.add(this.mesh);
     }
     //------------------------------------------------------------
     disposeMesh() {
@@ -692,10 +710,19 @@ export class GameObject {
             case TEXTURED:
                 {
                     let texture;
+                    /*
                     if (col instanceof THREE.Texture) {
                         texture = col;
                     } else {
                         texture = new THREE.TextureLoader().load(col);
+                    }
+                    */
+                    if (col instanceof THREE.Texture) {
+                        texture = col;
+                    } else if (col instanceof PIXI.Texture) {
+                        texture = new THREE.TextureLoader().load(col.textureCacheIds[0]);  // uso normbre de archivo guardado en textura de pixi..
+                    } else {
+                        texture = new THREE.TextureLoader().load(col); // uso nombre de archivo directamente..
                     }
                     if (texture_repeat == true) {
                         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -910,7 +937,6 @@ export class GameObject {
                 }
                 break;
 
-
             // PLANE TYPE..
             case TYPE_PLANE:
                 {
@@ -921,14 +947,15 @@ export class GameObject {
 
                     if (this.sizex != 1 || this.sizey != 1 || this.sizez != 1) {
                         width_ = this.mesh.geometry.parameters.width * this.sizex;
-                        height_ = 1;
+                        height_ = this.mesh.geometry.parameters.height * this.sizey;
                         depth_ = this.mesh.geometry.parameters.depth * this.sizez;
                     } else {
                         width_ = this.mesh.geometry.parameters.width * this.size;
-                        height_ = 1;
+                        height_ = this.mesh.geometry.parameters.height * this.size;
                         depth_ = this.mesh.geometry.parameters.depth * this.size;
                     }
-                    let shape = new CANNON.Box(new CANNON.Vec3(width_ / 2, height_, depth_ / 2));
+                    //let shape = new CANNON.Box(new CANNON.Vec3(width_ / 2, height_, depth_ / 2));
+                    let shape = new CANNON.Box(new CANNON.Vec3(width_ / 2, height_ / 2, 0.001));
                     let masa = 0;
                     this.body = new CANNON.Body({
                         mass: masa

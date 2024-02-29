@@ -86,7 +86,7 @@ class Game extends GameObject {
         this.botonCaminar1 = undefined;
         this.botonCaminar2 = undefined;
     }
-    initialize(){
+    initialize() {
         letMeAlone();
     }
     frame() {
@@ -301,6 +301,7 @@ class CeldaSuelo extends GameObject {
         this.name = name;
     }
     initialize() {
+        this.anglex = -90;
         this.createMaterial(TEXTURED, "data/Example_11_3d_art_galery/images/texturas/000.png", true);
         this.createPlane(200, 200);
         this.mesh.name = this.name;

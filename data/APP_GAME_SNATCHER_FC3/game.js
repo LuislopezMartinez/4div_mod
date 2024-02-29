@@ -132,6 +132,8 @@ class Game extends GameObject {
 
                     new Suelo();
 
+                    //new Humo(0);
+                    //new Humo(1);
 
                     fadeOn(1000);
                     this.st = 20;
@@ -145,6 +147,32 @@ class Game extends GameObject {
     }
 }
 //---------------------------------------------------------------------------------
+class Humo extends GameObject {
+    constructor(mode) {
+        super();
+        this.mode = mode;
+    }
+    initialize() {
+
+        this.createMaterial(TEXTURED, img[3]);
+        if (this.mode == 0) {
+            this.x = 50;
+            this.y = 0;
+            this.createPlane(100, 100);
+        } else {
+            this.x = -50;
+            this.y = 0;
+            this.createPlane2(100, 100);
+        }
+    }
+    finalize() {
+
+    }
+    frame() {
+        //this.angle += random(0.25);
+    }
+}
+//---------------------------------------------------------------------------------
 class Suelo extends GameObject {
     constructor() {
         super();
@@ -154,16 +182,15 @@ class Suelo extends GameObject {
     frame() {
         switch (this.st) {
             case 0:
+                this.anglex = -90;
                 this.createMaterial(TEXTURED, dataPath + "images/004.png", true);
                 this.createPlane(100, 100);
-                //console.log(this.material.map);
                 this.st = 10;
                 break;
             case 10:
                 this.counter -= 0.01;
                 // animateUV();
-                this.setTextureOffet(-this.counter, this.counter);
-                this.x++;
+                this.setTextureOffet(0, this.counter);
                 break;
             case 20:
                 break;

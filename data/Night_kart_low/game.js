@@ -162,6 +162,7 @@ class Escena_jugar extends Process {
         switch (this.st) {
             case 0:
                 setGravity(0, -90, 0);
+                this.anglex = -90;
                 this.createMaterial(TEXTURED, dataPath + "/images/circuit0.png", false);
                 this.createPlane(2000, 2000);
                 this.createBody(TYPE_PLANE);

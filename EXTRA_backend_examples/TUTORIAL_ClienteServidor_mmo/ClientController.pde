@@ -30,7 +30,7 @@ class ClientController extends sprite {
             this.updatePlayersArround();
             this.move();
 
-            if (this.moved) {
+            if (this.moved && frameCount%10==0) {
                 this.moved = false;
                 this.syncPositionWithPlayersArround();
             }

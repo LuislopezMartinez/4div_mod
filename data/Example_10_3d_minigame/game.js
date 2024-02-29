@@ -96,6 +96,7 @@ class Game extends GameObject {
                 setGravity(0, -200, 0);
                 this.y = -40;
                 this.z = 100;
+                this.anglex = -90;
                 this.createPlane(200, 200);
                 this.createBody(TYPE_PLANE);
 

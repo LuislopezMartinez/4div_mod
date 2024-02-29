@@ -88,9 +88,9 @@ class Game extends GameObject {
                 setGravity(0, -100, 0);
                 this.z = 100;
                 this.y = -30;
+                this.anglex = 90;
                 this.createPlane(100, 100);
                 this.createBody(TYPE_PLANE);
-
                 for (let i = 0; i < 100; i++) {
                     new Cosa3d();
                 }
