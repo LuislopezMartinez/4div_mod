@@ -32,6 +32,7 @@ window.setup = function () {
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
+    soundSetMasterVolume(0);
 }
 
 window.main = function () {
@@ -808,7 +809,7 @@ class Personaje2 extends GameObject {
         if ((key(_SPACE) || this.saltar) && this.isOnGround() && !this.lockJump) {
             this.saltar = false;
             this.setVy(0);
-            this.addVy(.02);
+            this.addVy(.025);
             this.lockJump = true;
             this.action = "jump";
         }

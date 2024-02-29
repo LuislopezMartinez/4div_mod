@@ -3845,7 +3845,7 @@ export function soundStop(snd_, soundsArray) {
 }
 //-------
 export function soundSetVolume(snd, value) {
-    snd.setVolume(value);
+    snd.setVolume(value * glz_sound_master_volume);
 }
 //-------
 export function soundIsPlaying(snd) {
