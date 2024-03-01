@@ -5204,3 +5204,31 @@ export class TableRow {
     }
 }
 //---------------------------------------------------------------------------------
+export class Storage {
+    // window.localStorage object..
+    constructor() {
+        if (localStorage == undefined) {
+            console.error("ERROR: localStoraje not available on this platform!");
+        }
+    }
+    set(key, obj) {
+        localStorage.setItem(key, obj);
+    }
+    get(key) {
+        localStorage.getItem(key);
+    }
+    remove(key) {
+        localStorage.removeItem(key);
+    }
+    clear() {
+        localStorage.clear();
+    }
+    keys() {
+        let l = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            l.push(localStorage.key(i));
+        }
+        return l;
+    }
+}
+//---------------------------------------------------------------------------------
