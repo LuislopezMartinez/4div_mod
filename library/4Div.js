@@ -1395,7 +1395,18 @@ export class GameObject {
             this.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(this.x, this.y, this.z));
         }
     }
+    createTexture(w, h, col) {
+        // crea una textura para luego crear un sprite con ella..
+        var gr = new PIXI.Graphics();
+        gr.beginFill(col);
+        gr.lineStyle(0);
+        gr.drawRect(0, 0, w, h);
+        gr.endFill();
+        var texture = app.renderer.generateTexture(gr);
+        return texture;
+    }
     setGraph(texture) {
+        // crea un sprite apartir de una textura cargada de un archivo o creada con createTexture()..
         if (this.graph !== undefined) {
             this.graph.texture = texture;
         } else {
@@ -1405,8 +1416,14 @@ export class GameObject {
         }
 
     }
-
     newGraph(w, h) {
+        if (this.graph !== undefined) {
+            app.stage.removeChild(this.graph);
+        }
+        let tex = this.createTexture(w, h, WHITE);
+        this.setGraph(tex);
+    }
+    newGraph_(w, h) {
         if (this.graph !== undefined) {
             app.stage.removeChild(this.graph);
         }
@@ -4230,35 +4247,13 @@ export class EGUIbutton extends GameObject {
         this.st = 0;
     }
     frame() {
-
         switch (this.st) {
             case 0:
-
                 if (this.graph !== undefined) {
                     app.stage.removeChild(this.graph);
                     this.graph = undefined;
                 }
-                this.graph = new PIXI.Sprite(PIXI.Texture.WHITE);
-                if (this.w != undefined) {
-                    this.graph.width = this.w;
-                    this.graph.height = this.h;
-                } else {
-                    let textInfo_ = textInfo(this.font, this.textSize, this.label);
-                    this.graph.width = textInfo_.width + 10;
-                    this.graph.height = textInfo_.height + 10;
-                }
-                if (this.graphics != undefined) app.stage.removeChild(this.graphics);
-                this.graphics = undefined;
-                this.graphics = new PIXI.Graphics();
-                this.graphics.beginFill(0x000000);
-                this.graphics.drawRect(0, 0, this.graph.width + 2, this.graph.height + 2);
-                this.graphics.zIndex = this.z - 1;
-                this.graphics.x = this.x - this.graph.width / 2;
-                this.graphics.y = this.y - this.graph.height / 2;
-                app.stage.addChild(this.graphics);
-
-                this.draw();
-                app.stage.addChild(this.graph);
+                this.newGraph(this.w, this.h);
                 this.idText = new Write(this.fnt, this.textSize, this.label, CENTER, this.x, this.y, this.textColor, 255);
                 this.tint(this.tint1);
                 this.st = 10;
@@ -4283,7 +4278,10 @@ export class EGUIbutton extends GameObject {
     setDisable(value) {
         this.disabled = value;
     }
-    setColors(colorA, colorB) {
+    setColor(colorA = this.tint1) {
+        this.tint1 = colorA;
+    }
+    setColors(colorA = this.tint1, colorB = this.tint2) {
         this.tint1 = colorA;
         this.tint2 = colorB;
     }

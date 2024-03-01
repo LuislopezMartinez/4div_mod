@@ -23,13 +23,13 @@ window.setup = function () {
     setBackgroundColor(0x333333);          // color de fondo de pantalla..
     setFadingColor(BLACK);           // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
-    setMode(1280, 720, false, false);   // define la resolucion grafica..
+    setMode(1280, 720, false, true);   // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(1);
+    soundSetMasterVolume(0);
 }
 
 window.main = function () {
@@ -44,7 +44,7 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 4);
+                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 5);
                 loader[1] = new LoadSounds("data/APP_GAME_SNATCHER_FC3/sounds/", 4);
                 let list = [];
                 list.push("data/APP_GAME_SNATCHER_FC3/fonts/MSX-Screen0.ttf");
@@ -114,7 +114,7 @@ class Game extends GameObject {
                 if (!glz.fading) {
                     letMeAlone();
                     soundPlay(snd[1]);
-
+                    /*
                     this.dialog = new DialogBox();
                     this.dialog.add("Lorem Ipsum es simplemente el texto de relleno de las");
                     this.dialog.add("imprentas y archivos de texto. Lorem Ipsum ha sido el texto de");
@@ -129,22 +129,77 @@ class Game extends GameObject {
                     this.dialog.add("Ipsum, y más recientemente con software de autoedición,");
                     this.dialog.add("como por ejemplo Aldus PageMaker, el cual incluye versiones");
                     this.dialog.add("de Lorem Ipsum.");
+                    */
+                    new Suelo();
 
-                    //new Suelo();
+                    for (let i = 0; i < 30; i++) {
+                        new Humo();
+                    }
 
-                    //for (let i = 0; i < 10; i++) {
-                    new Humo();
-                    //}
 
+                    let menu = 1;
+
+                    // buttons..
+                    if (menu == 0) {
+                        let c = new EGUIbutton(null, 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
+                        c.setArea(350, 80);
+                        //c.setEvent("event_game_empezarPartida");
+                    } else {
+                        let c = new EGUIbutton(null, 32, "EMPEZAR DE NUEVO", WIDTH / 2, 500 - 60, WHITE);
+                        c.setArea(350, 80);
+                        c.setColor(RED);
+                        //c.setEvent("event_game_empezarPartida");
+
+                        c = new EGUIbutton(null, 32, "CONTINUAR PARTIDA", WIDTH / 2, 500 + 60, WHITE);
+                        c.setArea(350, 80);
+                        //c.setColor(GREEN);
+                        //c.setEvent("event_game_empezarPartida");
+                    }
+
+                    new Logo();
+                    new Marco(WIDTH / 2, HEIGHT / 2, PINK);
                     fadeOn(1000);
                     this.st = 20;
                 }
                 break;
             case 20:
-
+                this.alpha += 0.01;
                 break;
 
         }
+    }
+}
+//---------------------------------------------------------------------------------
+class Marco extends GameObject {
+    constructor(x, y, col) {
+        super();
+        this.x = x;
+        this.y = y;
+        this.col = col;
+    }
+    initialize() {
+        //this.newGraph(200, 60);
+        //this.tint(this.col);
+        this.setGraph(img[5]);
+    }
+    frame() {
+
+    }
+
+}
+//---------------------------------------------------------------------------------
+class Logo extends GameObject {
+    constructor() {
+        super();
+    }
+    initialize() {
+        this.x = WIDTH / 2;
+        this.y = 250;
+        this.setGraph(img[4]);
+        console.log(this);
+    }
+    frame() {
+
     }
 }
 //---------------------------------------------------------------------------------
@@ -154,13 +209,11 @@ class Humo extends GameObject {
         this.value = random(0.25);
     }
     initialize() {
-        this.size = 50;
+        this.size = 100;
+        this.alpha = 0.25;
         this.x = random(-50, 50);
         this.y = random(-50, 50);
-        //this.createMaterial(TEXTURED, img[3]);
-        //this.createPlane(100, 100);
         this.createSprite(img[3]);
-        console.log(this.mesh);
     }
     finalize() {
 
@@ -180,7 +233,7 @@ class Suelo extends GameObject {
         switch (this.st) {
             case 0:
                 this.anglex = -90;
-                this.createMaterial(TEXTURED, dataPath + "images/004.png", true);
+                this.createMaterial(TEXTURED, img[2], true);
                 this.createPlane(100, 100);
                 this.st = 10;
                 break;
