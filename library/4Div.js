@@ -5215,7 +5215,7 @@ export class Storage {
         localStorage.setItem(key, obj);
     }
     get(key) {
-        localStorage.getItem(key);
+        return localStorage.getItem(key);
     }
     remove(key) {
         localStorage.removeItem(key);
@@ -5229,6 +5229,13 @@ export class Storage {
             l.push(localStorage.key(i));
         }
         return l;
+    }
+    contains(key) {
+        if (localStorage[key]) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 //---------------------------------------------------------------------------------

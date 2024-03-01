@@ -31,8 +31,6 @@ window.setup = function () {
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
     soundSetMasterVolume(0);
-    data.set("name", "luis");
-    data.set("age", "44");
 }
 
 window.main = function () {
@@ -139,9 +137,10 @@ class Game extends GameObject {
                         new Humo();
                     }
 
-                    let menu = 1;
-                    // buttons..
-                    if (menu == 0) {
+                    console.log(data.get("date"));
+
+                    if (!data.contains("date")) {
+                        //data.set("date", new Date());
                         let c = new EGUIbutton(null, 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
                         c.setArea(350, 80);
                         //c.setEvent("event_game_empezarPartida");
@@ -156,8 +155,6 @@ class Game extends GameObject {
                         //c.setColor(GREEN);
                         //c.setEvent("event_game_empezarPartida");
                     }
-
-                    console.log(data.keys());
 
                     new Logo();
                     new Marco(WIDTH / 2, HEIGHT / 2, PINK);
