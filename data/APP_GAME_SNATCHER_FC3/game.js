@@ -30,7 +30,7 @@ window.setup = function () {
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(0);
+    soundSetMasterVolume(1);
 }
 
 window.main = function () {
@@ -87,7 +87,16 @@ window.main = function () {
             break;
     }
 }
-
+//---------------------------------------------------------------------------------
+window.event_game_empezarDeNuevo = function () {
+    idGame.onClick_empezarDeNuevo();
+}
+window.event_game_empezarPartida = function () {
+    idGame.onClick_empezarPartida();
+}
+window.event_game_continuarPartida = function () {
+    idGame.onClick_continuarPartida();
+}
 //---------------------------------------------------------------------------------
 class Game extends GameObject {
     constructor() {
@@ -137,18 +146,18 @@ class Game extends GameObject {
                         new Humo();
                     }
 
-                    console.log(data.get("date"));
+                    //console.log(data.get("date"));
 
                     if (!data.contains("date")) {
-                        //data.set("date", new Date());
+                        data.set("date", new Date());
                         let c = new EGUIbutton(null, 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
                         c.setArea(350, 80);
-                        //c.setEvent("event_game_empezarPartida");
+                        c.setEvent("event_game_empezarPartida");
                     } else {
                         let c = new EGUIbutton(null, 32, "EMPEZAR DE NUEVO", WIDTH / 2, 500 - 60, WHITE);
                         c.setArea(350, 80);
                         c.setColor(RED);
-                        //c.setEvent("event_game_empezarPartida");
+                        c.setEvent("event_game_empezarDeNuevo");
 
                         c = new EGUIbutton(null, 32, "CONTINUAR PARTIDA", WIDTH / 2, 500 + 60, WHITE);
                         c.setArea(350, 80);
@@ -166,7 +175,52 @@ class Game extends GameObject {
                 this.alpha += 0.01;
                 break;
 
+            case 100:
+                soundPlay(snd[4]);
+                data.clear();
+                soundStop(snd[1]);
+                fadeOff(500);
+                this.st = 110;
+                break;
+            case 110:
+                if (!glz.fading) {
+                    this.st = 120;
+                }
+                break;
+            case 120:
+                this.st = 10;
+                break;
+
+            case 200:
+                lockEGUI();
+                soundPlay(snd[3]);
+                fadeOff(500);
+                this.st = 210;
+                break;
+            case 210:
+
+                break;
+
+            case 300:
+                lockEGUI();
+                soundPlay(snd[3]);
+                fadeOff(500);
+                this.st = 310;
+                break;
+            case 310:
+
+                break;
+
         }
+    }
+    onClick_empezarDeNuevo() {
+        this.st = 100;
+    }
+    onClick_empezarPartida() {
+        this.st = 200;
+    }
+    onClick_continuarPartida() {
+        this.st = 300;
     }
 }
 //---------------------------------------------------------------------------------

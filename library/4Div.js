@@ -1800,13 +1800,6 @@ window.onload = function () {
     mouse = new Mouse();
     signal(mouse, s_protected);
 
-    fadeRect = PIXI.Sprite.from(PIXI.Texture.WHITE);
-    fadeRect.width = WIDTH;
-    fadeRect.height = HEIGHT;
-    fadeRect.tint = fadingColor;
-    fadeRect.alpha = 0;
-    fadeRect.zIndex = fadingRect_z;        // cuanto mas alto mas delante se pintara..
-    app.stage.addChild(fadeRect);
     app.ticker.add(_main_core_);
 
     scene = new THREE.Scene();
@@ -1829,6 +1822,17 @@ window.onload = function () {
     }
     renderer.setClearColor(backgroundColor, 1);
     renderer.setSize(WIDTH, HEIGHT);
+
+    var gr = new PIXI.Graphics();
+    gr.beginFill(fadingColor);
+    gr.lineStyle(2);
+    gr.drawRect(0, 0, WIDTH, HEIGHT);
+    gr.endFill();
+    var texture = app.renderer.generateTexture(gr);
+    fadeRect = PIXI.Sprite.from(texture);
+    fadeRect.alpha = 0;
+    fadeRect.zIndex = fadingRect_z;        // cuanto mas alto mas delante se pintara..
+    app.stage.addChild(fadeRect);
 
     _4div_light_ambient_ = new THREE.AmbientLight(_4div_light_ambient_color_, _4div_light_ambient_intensity_);
     scene.add(_4div_light_ambient_);
