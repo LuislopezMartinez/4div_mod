@@ -2689,9 +2689,11 @@ class Teclado extends GameObject {
                 break;
             case 12:
                 {
-                    this.size = WIDTH / this.img[6].width;
+                    //this.size = WIDTH / this.img[6].width;
+                    this.sizex = WIDTH / this.img[6].width;
+                    this.sizey = HEIGHT / this.img[6].height;
                     this.x = WIDTH / 2;
-                    this.y = HEIGHT - (this.img[6].height * this.size) / 2;
+                    this.y = HEIGHT - (this.img[6].height * this.sizey) / 2;
                     this.setGraph(this.img[6]);
                     let pos = this.getRealPoint(10, 23);
                     this.idText = new Write(null, 30 * this.size, this.buffer, RIGHT, pos.x, pos.y, BLACK, 1);
@@ -2715,7 +2717,7 @@ class Teclado extends GameObject {
         let yy = 73;
         for (let i = 0; i < xx.length; i++) {
             let vec = this.getRealPoint(xx[i], yy);
-            let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.size);
+            let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.sizex, this.sizey);
             b.z = this.z + 1;
             b.setLabel(null, this.textKeysSize, this.keys_lower[i], CENTER, 0, 0, BLACK);
             b.setEvent("EVENT_Teclado_tecla");
@@ -2725,7 +2727,7 @@ class Teclado extends GameObject {
         yy = 127;
         for (let i = 0; i < xx.length; i++) {
             let vec = this.getRealPoint(xx[i], yy);
-            let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.size);
+            let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.sizex, this.sizey);
             b.z = this.z + 1;
             b.setLabel(null, this.textKeysSize, this.keys_lower[xx.length + i], CENTER, 0, 0, BLACK);
             b.setEvent("EVENT_Teclado_tecla");
@@ -2736,7 +2738,7 @@ class Teclado extends GameObject {
         yy = 181;
         for (let i = 0; i < xx.length; i++) {
             let vec = this.getRealPoint(xx[i], yy);
-            let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.size);
+            let b = new EGUIgbutton(this.img[2], vec.x, vec.y, this.sizex, this.sizey);
             b.z = this.z + 1;
             b.setLabel(null, this.textKeysSize, this.keys_lower[20 + i], CENTER, 0, 0, BLACK);
             b.setEvent("EVENT_Teclado_tecla");
@@ -2744,7 +2746,7 @@ class Teclado extends GameObject {
         }
         //-------------------------------------------------------
         let vec = this.getRealPoint(187, 235);
-        let b = new EGUIgbutton(this.img[4], vec.x, vec.y, this.size);
+        let b = new EGUIgbutton(this.img[4], vec.x, vec.y, this.sizex, this.sizey);
         b.z = this.z + 1;
         b.setLabel(null, this.textKeysSize, " space ", CENTER, 0, 0, BLACK);
         b.setEvent("EVENT_Teclado_tecla");
@@ -2754,27 +2756,27 @@ class Teclado extends GameObject {
         let vec;
         let b;
         vec = this.getRealPoint(24, 181);
-        b = new EGUIgbutton(this.img[0], vec.x, vec.y, this.size);
+        b = new EGUIgbutton(this.img[0], vec.x, vec.y, this.sizex, this.sizey);
         b.setType(GLZ_KEYBOARD_SPECIAL_KEY_TYPE);
         b.z = this.z + 1;
         b.setEvent("EVENT_Teclado_teclaEspecial_mays");
         vec = this.getRealPoint(350, 181);
-        b = new EGUIgbutton(this.img[7], vec.x, vec.y, this.size);
+        b = new EGUIgbutton(this.img[7], vec.x, vec.y, this.sizex, this.sizey);
         b.setType(GLZ_KEYBOARD_SPECIAL_KEY_TYPE);
         b.z = this.z + 1;
         b.setEvent("EVENT_Teclado_teclaEspecial_del");
         vec = this.getRealPoint(24, 235);
-        b = new EGUIgbutton(this.img[1], vec.x, vec.y, this.size);
+        b = new EGUIgbutton(this.img[1], vec.x, vec.y, this.sizex, this.sizey);
         b.setType(GLZ_KEYBOARD_SPECIAL_KEY_TYPE);
         b.z = this.z + 1;
         b.setEvent("EVENT_Teclado_teclaEspecial_123");
         vec = this.getRealPoint(72, 235);
-        b = new EGUIgbutton(this.img[3], vec.x, vec.y, this.size);
+        b = new EGUIgbutton(this.img[3], vec.x, vec.y, this.sizex, this.sizey);
         b.setType(GLZ_KEYBOARD_SPECIAL_KEY_TYPE);
         b.z = this.z + 1;
 
         vec = this.getRealPoint(328, 235);
-        b = new EGUIgbutton(this.img[8], vec.x, vec.y, this.size);
+        b = new EGUIgbutton(this.img[8], vec.x, vec.y, this.sizex, this.sizey);
         b.setType(GLZ_KEYBOARD_SPECIAL_KEY_TYPE);
         b.z = this.z + 1;
         b.setEvent("EVENT_Teclado_teclaEspecial_return");
@@ -4231,7 +4233,7 @@ export class EGUIbutton extends GameObject {
         if (font == null) {
             this.font = 'fnt';
         } else {
-            this.font = font.family;
+            this.font = font;
         }
         this.label = label;
         this.x = x;
@@ -4264,7 +4266,7 @@ export class EGUIbutton extends GameObject {
                     this.graph = undefined;
                 }
                 this.newGraph(this.w, this.h);
-                this.idText = new Write(this.fnt, this.textSize, this.label, CENTER, this.x, this.y, this.textColor, 255);
+                this.idText = new Write(this.font, this.textSize, this.label, CENTER, this.x, this.y, this.textColor, 255);
                 this.tint(this.tint1);
                 this.st = 10;
                 break;
@@ -4346,12 +4348,13 @@ export class EGUIbutton extends GameObject {
 }
 //-------
 export class EGUIgbutton extends GameObject {
-    constructor(gr, x, y, size) {
+    constructor(gr, x, y, sizex = 1, sizey = 1) {
         super();
         this.st = 0;
         this.x = x;
         this.y = y;
-        this.size = size;
+        this.sizex = sizex;
+        this.sizey = sizey;
         this.only1gr = false;
         if (Array.isArray(gr) == true) {
             this.gr = gr[0];
@@ -4495,7 +4498,7 @@ export class EGUIinputBox extends GameObject {
         if (font == null) {
             this.font = 'fnt';
         } else {
-            this.font = font.family;
+            this.font = font;
         }
         this.label = label;
         this.labelColor = 0x000000;
@@ -4545,16 +4548,16 @@ export class EGUIinputBox extends GameObject {
                 this.graphics.x = this.x - this.w / 2;
                 this.graphics.y = this.y - this.h / 2;
                 app.stage.addChild(this.graphics);
-                this.idLabel = new Write(this.fnt, this.textSize, this.label, LEFT, this.x - this.w / 2, this.y, this.labelColor, 255);
+                this.idLabel = new Write(this.font, this.textSize, this.label, LEFT, this.x - this.w / 2, this.y, this.labelColor, 255);
 
                 this.pwdText = "";
                 for (let i = 0; i < this.text.length; i++) {
                     this.pwdText += "*";
                 }
                 if (this.pwdMode == true) {
-                    this.idText = new Write(this.fnt, this.textSize, this.pwdText, RIGHT, 2 + this.x - this.w / 2, this.y, this.textColor, 255);
+                    this.idText = new Write(this.font, this.textSize, this.pwdText, RIGHT, 2 + this.x - this.w / 2, this.y, this.textColor, 255);
                 } else {
-                    this.idText = new Write(this.fnt, this.textSize, this.text, RIGHT, 2 + this.x - this.w / 2, this.y, this.textColor, 255);
+                    this.idText = new Write(this.font, this.textSize, this.text, RIGHT, 2 + this.x - this.w / 2, this.y, this.textColor, 255);
                 }
                 this.tint(this.tint1);
                 this.st = 10;

@@ -22,7 +22,7 @@ let data = new Storage();
 
 let frases = [];
 frases.push("La clave es comprender antes de reaccionar.");
-frases.push("La naturaleza de internet te permite tomarte un pausa.");
+frases.push("La naturaleza de internet te permite tomar una pausa.");
 frases.push("Busca alguien de confianza solo para que te escuche.");
 frases.push("Debes enfrentar tus emociones con el fin de mejorar tus reacciones.");
 frases.push("Hay que experimentar una emocion para saber lo que produce.");
@@ -38,7 +38,7 @@ window.setup = function () {
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
-    fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
+    fadeOn(500);                       // enciendo la pantalla durante 1 segundo..
     soundSetMasterVolume(0);
 }
 
@@ -112,6 +112,10 @@ class Game extends GameObject {
         super();
         this.st = 0;
         this.dialog;
+        this.botonEmpezar;
+        this.botonContinuar;
+        this.botonBorrar;
+        this.inNick;
     }
     initialize() {
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
@@ -129,11 +133,13 @@ class Game extends GameObject {
         } else {
             data.set("contador_frase_inicio", 0);
         }
-        new Write(null, 24, "Frase del dia: ", LEFT, 300, HEIGHT - 60, WHITE, 1);
-        new Write(null, 24, frases[contador_frase_inicio], RIGHT, 300, HEIGHT - 60, LIME, 1);
+
+        let c = new Write(null, 24, frases[contador_frase_inicio], CENTER, WIDTH / 2, HEIGHT - 60, LIME, 1);
+        let w = c.getWidth();
+        new Write(null, 24, "Frase del dia: ", LEFT, c.x - w / 2, HEIGHT - 60, WHITE, 1);
 
         soundPlay(snd[0], false, 0.2);
-        fadeOn(4000);
+        fadeOn(2000);
     }
     frame() {
         switch (this.st) {
@@ -173,18 +179,18 @@ class Game extends GameObject {
                     //console.log(data.get("date"));
 
                     if (!data.contains("date")) {
-                        let c = new EGUIbutton(null, 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
-                        c.setArea(350, 80);
-                        c.setEvent("event_game_empezarPartida");
+                        this.botonEmpezar = new EGUIbutton(fnt[0], 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
+                        this.botonEmpezar.setArea(400, 80);
+                        this.botonEmpezar.setEvent("event_game_empezarPartida");
                     } else {
-                        let c = new EGUIbutton(null, 32, "EMPEZAR DE NUEVO", WIDTH / 2, 500 - 60, WHITE);
-                        c.setArea(350, 80);
-                        c.setColor(RED);
-                        c.setEvent("event_game_empezarDeNuevo");
+                        this.botonBorrar = new EGUIbutton(null, 32, "EMPEZAR DE NUEVO", WIDTH / 2, 500 - 60, WHITE);
+                        this.botonBorrar.setArea(400, 80);
+                        this.botonBorrar.setColor(RED);
+                        this.botonBorrar.setEvent("event_game_empezarDeNuevo");
 
-                        c = new EGUIbutton(null, 32, "CONTINUAR PARTIDA", WIDTH / 2, 500 + 60, WHITE);
-                        c.setArea(350, 80);
-                        c.setEvent("event_game_empezarPartida");
+                        this.botonContinuar = new EGUIbutton(null, 32, "CONTINUAR PARTIDA", WIDTH / 2, 500 + 60, WHITE);
+                        this.botonContinuar.setArea(400, 80);
+                        this.botonContinuar.setEvent("event_game_empezarPartida");
                     }
 
                     let c = new Write(null, 22, "Producido con [4Div_mod]", CENTER, WIDTH / 2, 20, BLACK, 1);
@@ -216,10 +222,14 @@ class Game extends GameObject {
                 break;
 
             case 200:
-                data.set("date", new Date());
-                lockEGUI();
+                //data.set("date", new Date());
+                //lockEGUI();
                 soundPlay(snd[3]);
-                fadeOff(500);
+                //fadeOff(500);
+                signal(this.botonEmpezar, s_kill);
+                this.inNick = new EGUIinputBox(fnt[0], 32, "Tu Nombre: ", "Invitado", WIDTH / 2, 480, 200);
+                this.inNick.setLabelColor(WHITE);
+                this.inNick.setAutoClear(true);
                 this.st = 210;
                 break;
             case 210:
@@ -268,14 +278,38 @@ class Marco extends GameObject {
 class Logo extends GameObject {
     constructor() {
         super();
+        this.gr = new GameObject();
+        this.counter = 0;
+        this.direccion = 0;
+        this.delta = 6;
     }
     initialize() {
         this.x = WIDTH / 2;
         this.y = 250;
+        this.size = 0.8;
         this.setGraph(img[4]);
+
+        this.gr.x = this.x;
+        this.gr.y = this.y;
+        this.gr.size = this.size;
+        this.gr.setGraph(img[4]);
+
     }
     frame() {
-
+        this.gr.alpha = 0.5 + this.counter / 2;
+        this.gr.x = this.x + this.delta * sin(radians(glz.frameCount));
+        this.gr.y = this.y + this.delta * cos(radians(glz.frameCount));
+        if (this.direccion == 0) {
+            this.counter += 0.03;
+            if (this.counter >= 1) {
+                this.direccion = 1;
+            }
+        } else {
+            this.counter -= 0.03;
+            if (this.counter <= 0) {
+                this.direccion = 0;
+            }
+        }
     }
 }
 //---------------------------------------------------------------------------------
@@ -308,13 +342,14 @@ class Suelo extends GameObject {
     frame() {
         switch (this.st) {
             case 0:
-                this.anglex = -90;
-                this.createMaterial(TEXTURED, img[2], true);
+                this.anglex = 90;
+                this.angley = 180;
+                this.createMaterial(TEXTURED, img[2], true, 1);
                 this.createPlane(100, 100);
                 this.st = 10;
                 break;
             case 10:
-                this.counter -= 0.01;
+                this.counter -= 0.001;
                 // animateUV();
                 this.setTextureOffet(0, this.counter);
                 break;
