@@ -20,6 +20,15 @@ let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
 
+let frases = [];
+frases.push("La clave es comprender antes de reaccionar.");
+frases.push("La naturaleza de internet te permite tomarte un pausa.");
+frases.push("Busca alguien de confianza solo para que te escuche.");
+frases.push("Debes enfrentar tus emociones con el fin de mejorar tus reacciones.");
+frases.push("Hay que experimentar una emocion para saber lo que produce.");
+frases.push("Yo so yo, y me hago responsable de mis emociones.");
+frases.push("Las palabras adquieren su poder atraves del valor que nosotros les damos.");
+
 window.setup = function () {
     setBackgroundColor(0x333333);          // color de fondo de pantalla..
     setFadingColor(BLACK);           // color del fade de pantalla..
@@ -30,7 +39,7 @@ window.setup = function () {
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(1);
+    soundSetMasterVolume(0);
 }
 
 window.main = function () {
@@ -108,6 +117,21 @@ class Game extends GameObject {
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
         this.a = new Write(fnt[0], 32, "LUIS LOPEZ MARTINEZ", CENTER, WIDTH / 2, HEIGHT / 2, WHITE, 1);
         new Write(fnt[1], 16, "GameLibZero - 2024", CENTER, WIDTH / 2, HEIGHT / 2 + 32, YELLOW, 1);
+
+        let contador_frase_inicio = 0;
+        if (data.contains("contador_frase_inicio")) {
+            contador_frase_inicio = data.get("contador_frase_inicio");
+            contador_frase_inicio++;
+            if (contador_frase_inicio >= frases.length) {
+                contador_frase_inicio = 0;
+            }
+            data.set("contador_frase_inicio", contador_frase_inicio);
+        } else {
+            data.set("contador_frase_inicio", 0);
+        }
+        new Write(null, 24, "Frase del dia: ", LEFT, 300, HEIGHT - 60, WHITE, 1);
+        new Write(null, 24, frases[contador_frase_inicio], RIGHT, 300, HEIGHT - 60, LIME, 1);
+
         soundPlay(snd[0], false, 0.2);
         fadeOn(4000);
     }
@@ -149,7 +173,6 @@ class Game extends GameObject {
                     //console.log(data.get("date"));
 
                     if (!data.contains("date")) {
-                        data.set("date", new Date());
                         let c = new EGUIbutton(null, 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
                         c.setArea(350, 80);
                         c.setEvent("event_game_empezarPartida");
@@ -161,12 +184,13 @@ class Game extends GameObject {
 
                         c = new EGUIbutton(null, 32, "CONTINUAR PARTIDA", WIDTH / 2, 500 + 60, WHITE);
                         c.setArea(350, 80);
-                        //c.setColor(GREEN);
-                        //c.setEvent("event_game_empezarPartida");
+                        c.setEvent("event_game_empezarPartida");
                     }
 
+                    let c = new Write(null, 22, "Producido con [4Div_mod]", CENTER, WIDTH / 2, 20, BLACK, 1);
+
                     new Logo();
-                    new Marco(WIDTH / 2, HEIGHT / 2, PINK);
+                    //new Marco(WIDTH / 2, HEIGHT / 2, PINK);
                     fadeOn(1000);
                     this.st = 20;
                 }
@@ -192,6 +216,7 @@ class Game extends GameObject {
                 break;
 
             case 200:
+                data.set("date", new Date());
                 lockEGUI();
                 soundPlay(snd[3]);
                 fadeOff(500);

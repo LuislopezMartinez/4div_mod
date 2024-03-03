@@ -176,7 +176,6 @@ String.prototype.replaceAt = function (index, replacement) {
 
 export let Vector2 = THREE.Vector2;
 
-
 //----------------------------------------------------------------------------------
 export function millis() {
     return performance.now();
@@ -1846,6 +1845,7 @@ window.onload = function () {
     app.stage.addChild(THREE_SPRITE);
 
     initCannon();
+    glz_wakeLock();
     console.log("Page loaded!");
 
 }
@@ -2191,6 +2191,12 @@ export class Write extends GameObject {
     setSize(size) {
         this.textSizePoints = size;
         this.textSize = this.textSizePoints + 'px';
+    }
+    getWidth() {
+        return this.idText.width;
+    }
+    getHeight() {
+        return this.idText.height;
     }
 }
 //-------
@@ -5243,3 +5249,33 @@ export class Storage {
     }
 }
 //---------------------------------------------------------------------------------
+function glz_wakeLock() {
+    // test support
+    let isSupported = false;
+    if ('wakeLock' in navigator) {
+        isSupported = true;
+        console.log('Screen Wake Lock API supported 🎉');
+    } else {
+        console.log('Wake lock is not supported by this browser.');
+    }
+
+    if (isSupported) {
+        // create a reference for the wake lock
+        let wakeLock = null;
+
+        // create an async function to request a wake lock
+        const requestWakeLock = async () => {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) {
+                // if wake lock request fails - usually system related, such as battery
+                console.log(err.name, err.message);
+
+            }
+        } // requestWakeLock()
+    } // isSupported
+}
+
+//---------------------------------------------------------------------------------
+
+
