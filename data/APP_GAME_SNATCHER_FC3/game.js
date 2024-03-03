@@ -24,10 +24,10 @@ let frases = [];
 frases.push("La clave es comprender antes de reaccionar.");
 frases.push("La naturaleza de internet te permite tomar una pausa.");
 frases.push("Busca alguien de confianza solo para que te escuche.");
-frases.push("Debes enfrentar tus emociones con el fin de mejorar tus reacciones.");
+frases.push("Debes enfrentar tus emociones para mejorar tus reacciones.");
 frases.push("Hay que experimentar una emocion para saber lo que produce.");
 frases.push("Yo so yo, y me hago responsable de mis emociones.");
-frases.push("Las palabras adquieren su poder atraves del valor que nosotros les damos.");
+frases.push("Las palabras obtienen su poder del valor que nosotros les damos.");
 
 window.setup = function () {
     setBackgroundColor(0x333333);          // color de fondo de pantalla..
@@ -134,9 +134,9 @@ class Game extends GameObject {
             data.set("contador_frase_inicio", 0);
         }
 
-        let c = new Write(null, 24, frases[contador_frase_inicio], CENTER, WIDTH / 2, HEIGHT - 60, LIME, 1);
+        let c = new Write(fnt[0], 18, frases[contador_frase_inicio], CENTER, WIDTH / 2, HEIGHT - 60, LIME, 1);
         let w = c.getWidth();
-        new Write(null, 24, "Frase del dia: ", LEFT, c.x - w / 2, HEIGHT - 60, WHITE, 1);
+        new Write(fnt[0], 18, "Frase del dia: ", LEFT, c.x - w / 2, HEIGHT - 60, WHITE, 1);
 
         soundPlay(snd[0], false, 0.2);
         fadeOn(2000);

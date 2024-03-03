@@ -2095,6 +2095,7 @@ export class Write extends GameObject {
         this.style = undefined;
         this.idText = new PIXI.Text(text);
         this.idText.style.fontSize = this.textSize;
+        this.idText.style.fontFamily = this.font;
 
         if (_4div_screen_filter) {
             this.idText.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.LINEAR;
