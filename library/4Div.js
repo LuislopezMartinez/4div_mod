@@ -175,6 +175,7 @@ String.prototype.replaceAt = function (index, replacement) {
 }
 
 export let Vector2 = THREE.Vector2;
+export let Vector3 = THREE.Vector3;
 
 //----------------------------------------------------------------------------------
 export function millis() {
@@ -207,7 +208,14 @@ export function rand(min, max) {
 }
 //-------
 export function randInt(low, high) {
-    return low + Math.floor(Math.random() * (high - low + 1));
+    if (arguments.length == 1) {
+        high = low;
+        low = 0;
+        return low + Math.floor(Math.random() * (high - low + 1));
+    } else {
+        return low + Math.floor(Math.random() * (high - low + 1));
+    }
+
 }
 //-------
 export function random(min, max) {
@@ -1705,12 +1713,19 @@ class Mouse extends GameObject {
         // unifica el mouse y el touch screen..
         // los 10 primeros son punteros del touchscreen..
         // a partir de 10 son mouse.left .midle y .right..
+
+        this.initTouchEvent = false;    // se pone a true cuando se toca el touch screen..
+        // esta variable sirve para evitar el salto de mouse cuando se inicia un touch..
+        // espacialmente para el control tactil de la camara 3d..
+
         for (var i = 0; i < 13; i++) {
             this.points.push({ active: false, x: 0, y: 0 });
         }
         this.raycaster = new THREE.Raycaster();
         this.intersects = [];
         this.position = new THREE.Vector2();
+        this.movementX = 0;
+        this.movementY = 0;
     }
     initialize() {
     }
@@ -1718,7 +1733,14 @@ class Mouse extends GameObject {
         if (this.oldX === this.x && this.oldY === this.y) {
             this.moved = false;
         } else {
-            this.moved = true;
+            if (this.initTouchEvent) {
+                this.initTouchEvent = false;
+            } else {
+                this.moved = true;
+                this.movementX = this.x - this.oldX;
+                this.movementY = this.y - this.oldY;
+            }
+
         }
         if (this.left || this.right) {
             this.touch = true;
@@ -1982,11 +2004,14 @@ function handleMouseMove(event) {
     mouse.canvas_x = event.clientX;
     mouse.canvas_y = event.clientY;
     mouse.updateMousePointsPosition(event.clientX, event.clientY);
+    //const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+    //const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+    //mouse.setMovementXY(movementX, movementY);
 }
 //-------
 function handleStart(event) {
     event.preventDefault();
-
+    mouse.initTouchEvent = true;
     mouse.left = true;
     mouse.canvas_x = event.touches[0].clientX;
     mouse.canvas_y = event.touches[0].clientY;
@@ -2014,7 +2039,9 @@ function handleMove(event) {
     for (var i = 0; i < event.changedTouches.length; i++) {
         mouse.setPoint(event.changedTouches[i].identifier, true, event.changedTouches[i].clientX, event.changedTouches[i].clientY);
     }
-
+    //const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+    //const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+    //mouse.setMovementXY(movementX, movementY);
 }
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -2070,7 +2097,7 @@ export function textInfo(font, size, text) {
 }
 //-------
 export class Write extends GameObject {
-    constructor(font, size, text, align, x, y, color, alpha) {
+    constructor(font, size, text, align, x, y, color = WHITE, alpha = 1) {
         super();
         if (font == null) {
             this.font = 'fnt';
@@ -2344,6 +2371,19 @@ export function RGBAToHex(r, g, b, a) {
 //-------
 export function arrayToHex(color) {
     return RGBToHex(color[0], color[1], color[2]);
+}
+//-------
+export function color(r, g, b) {
+    r = r.toString(16);
+    g = g.toString(16);
+    b = b.toString(16);
+    if (r.length == 1)
+        r = "0" + r;
+    if (g.length == 1)
+        g = "0" + g;
+    if (b.length == 1)
+        b = "0" + b;
+    return "0x" + r + g + b;
 }
 //---------------------------------------------------------------------------------
 //=================================================================================
@@ -3093,7 +3133,7 @@ export function fileExists(urlToFile) {
 export class Camera3d extends GameObject {
     constructor() {
         super();
-        this.st = 0;
+        this.st = -10;
         this.target = undefined;
         this.position = new THREE.Vector3();
         this.targetDistance = 0;                // distancia al punto 3d de la camara..
@@ -3153,10 +3193,26 @@ export class Camera3d extends GameObject {
         this.viewHalfX = WIDTH / 2;
         this.viewHalfY = HEIGHT / 2;
         this.mouseDragOn = true;
+        camera.position.z = 0;
+        camera.position.y = 0;
+        camera.position.x = 0;
+        //camera.lookAt(scene.position);
 
+    }
+    setEnabled(value) {
+        this.enabled = value;
+    }
+    setMouseControl(value) {
+        this.enableMouseControl = value;
     }
     frame() {
         switch (this.st) {
+            case -10:
+                if (this.enabled) {
+                    this.st = 0;
+                }
+                break;
+
             case 0:
 
                 if (this.enableMouseControl) {
@@ -3189,7 +3245,6 @@ export class Camera3d extends GameObject {
                         this.targetDistance_preset += 1;
                     }
                 }
-
 
                 if (this.activeDummy) {
                     this.trackDummy(0.02);
@@ -3544,8 +3599,19 @@ export class Camera3d extends GameObject {
             this.object.position.x = x;
             this.object.position.y = y;
             this.object.position.z = z;
+            this.position.x = this.object.position.x;
+            this.position.y = this.object.position.y;
+            this.position.z = this.object.position.z;
+        } else {
+            console.warn("ERROR: .setPosition() requires no target seted.");
         }
 
+    }
+    setRotation(value) {
+        this.lon = value;
+    }
+    setAzimut(value) {
+        this.lat = value;
     }
 }
 //---------------------------------------------------------------------------------
@@ -3742,7 +3808,6 @@ function _main_core_() {
                     gameObjects[i].mesh.material.dispose();
                 }
                 scene.remove(gameObjects[i].mesh);
-
             }
             gameObjects[i].destroyBody();
             this.body = undefined;
@@ -3820,6 +3885,8 @@ function _main_core_() {
     mouse.wheelDown = false;
     mouse.wheelUp = false;
     keyCode = undefined;
+    mouse.movementX = 0;
+    mouse.movementY = 0;
 
 }
 //-------
@@ -4232,7 +4299,7 @@ export class EGUIbutton extends GameObject {
         super();
         this.st = 0;
         if (font == null) {
-            this.font = 'fnt';
+            this.font = null;
         } else {
             this.font = font;
         }
@@ -4266,8 +4333,13 @@ export class EGUIbutton extends GameObject {
                     app.stage.removeChild(this.graph);
                     this.graph = undefined;
                 }
-                this.newGraph(this.w, this.h);
                 this.idText = new Write(this.font, this.textSize, this.label, CENTER, this.x, this.y, this.textColor, 255);
+                if (this.w == undefined) {
+                    this.w = this.idText.getWidth() + 10;
+                    this.h = this.idText.getHeight() + 4;
+                }
+
+                this.newGraph(this.w, this.h);
                 this.tint(this.tint1);
                 this.st = 10;
                 break;
@@ -4540,7 +4612,8 @@ export class EGUIinputBox extends GameObject {
     frame() {
         switch (this.st) {
             case 0:
-                this.h = textInfo(this.font, this.textSize, "W").lineHeight + 4;
+                this.idLabel = new Write(this.font, this.textSize, this.label, LEFT, this.x - this.w / 2, this.y, this.labelColor, 255);
+                this.h = this.idLabel.getHeight() + 4;
                 this.newGraph(this.w, this.h);
                 this.graphics = new PIXI.Graphics();
                 this.graphics.beginFill(0x000000);
@@ -4549,7 +4622,6 @@ export class EGUIinputBox extends GameObject {
                 this.graphics.x = this.x - this.w / 2;
                 this.graphics.y = this.y - this.h / 2;
                 app.stage.addChild(this.graphics);
-                this.idLabel = new Write(this.font, this.textSize, this.label, LEFT, this.x - this.w / 2, this.y, this.labelColor, 255);
 
                 this.pwdText = "";
                 for (let i = 0; i < this.text.length; i++) {
@@ -4710,6 +4782,8 @@ export class EGUIinputBox extends GameObject {
     }
     finalize() {
         app.stage.removeChild(this.graphics);
+        signal(this.idLabel, s_kill);
+        signal(this.idText, s_kill);
     }
 }
 //---------------------------------------------------------------------------------
@@ -5281,5 +5355,163 @@ function glz_wakeLock() {
 }
 
 //---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+export class Cam extends GameObject {
+    constructor() {
+        super();
+        this.object = camera;
+        this.target = undefined;
+        this.targetHeight = 0;
+        this.targetDistance = 10;
+        this.targetDistance_max = 10;
+        this.targetDistance_min = 5;
+        this.position = new Vector3();
+
+        this._euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        this._vector = new Vector3();
+        // Set to constrain the pitch of the camera
+        // Range is 0 to Math.PI radians
+        this.minPolarAngle = 0; // radians
+        this.maxPolarAngle = Math.PI; // radians
+        this._PI_2 = Math.PI / 2;
+
+        this.pointerSpeed = 1.0;
+        this.isLocked = false;
+
+        this.mouseZoom = true;
+        this.mouseControl = true;
+
+    }
+
+    initialize() {
+        signal(this, s_protected);
+    }
+
+    finalize() {
+
+    }
+
+    frame() {
+        if (this.mouseControl) {
+            if (mouse.left) {
+                if (!this.isLocked) {
+                    this.isLocked = true;
+                }
+            } else {
+                if (this.isLocked) {
+                    this.isLocked = false;
+                }
+            }
+            if (mouse.moved) this.onMouseMove();
+        }
 
 
+        if (this.mouseZoom) {
+            if (mouse.wheelUp) {
+                this.targetDistance -= 1;
+                if (this.targetDistance < this.targetDistance_min) {
+                    this.targetDistance = this.targetDistance_min;
+                }
+            }
+            if (mouse.wheelDown) {
+                this.targetDistance += 1;
+                if (this.targetDistance > this.targetDistance_max) {
+                    this.targetDistance = this.targetDistance_max;
+                }
+            }
+        }
+
+        let dx = 0, dy = 0, dz = 0;
+        if (this.target) {
+            dx = this.target.x - this.x;
+            dy = this.target.y - this.y;
+            dz = this.target.z - this.z;
+            this.x += dx / 20;
+            this.y += dy / 20;
+            this.z += dz / 20;
+            camera.position.x = this.x;
+            camera.position.y = this.y + this.targetHeight;
+            camera.position.z = this.z;
+            camera.translateZ(this.targetDistance);
+        } else {
+            camera.position.x = this.x;
+            camera.position.y = this.y + this.targetHeight;
+            camera.position.z = this.z;
+            camera.translateZ(this.targetDistance);
+        }
+
+
+    }
+    //------------------------------------------
+    setTarget(target) {
+        if (!(target instanceof GameObject)) {
+            console.warn("ERROR: Target not is a instanceof GameObject!");
+            return;
+        }
+        this.target = target;
+    }
+    setTargetDistance(min, max) {
+        if (arguments.length == 1) {
+            this.targetDistance = min;
+            this.targetDistance_max = min;
+        } else if (arguments.length == 2) {
+            this.targetDistance = max;
+            this.targetDistance_max = max;
+            this.targetDistance_min = min;
+        }
+
+    }
+    setTargetHeight(value) {
+        this.targetHeight = value;
+    }
+    //------------------------------------------
+    setMouseControl(value) {
+        this.mouseControl = value;
+    }
+    advance(distance) {
+        // movimiento alante / atras..
+        this._vector.setFromMatrixColumn(camera.matrix, 0);
+        this._vector.crossVectors(camera.up, this._vector);
+        this.position.addScaledVector(this._vector, distance);
+        this.x = this.position.x;
+        this.y = this.position.y;
+        this.z = this.position.z;
+    }
+
+    moveRight(distance) {
+        // movimiento izquierda / derecha..
+        this._vector.setFromMatrixColumn(camera.matrix, 0);
+        this.position.addScaledVector(this._vector, distance);
+        this.x = this.position.x;
+        this.y = this.position.y;
+        this.z = this.position.z;
+    }
+
+    onMouseMove() {
+        if (this.isLocked === false) return;
+        this._euler.setFromQuaternion(camera.quaternion);
+        this._euler.y -= mouse.movementX * 0.002 * this.pointerSpeed;
+        this._euler.x -= mouse.movementY * 0.002 * this.pointerSpeed;
+        this._euler.x = Math.max(this._PI_2 - this.maxPolarAngle, Math.min(this._PI_2 - this.minPolarAngle, this._euler.x));
+        camera.quaternion.setFromEuler(this._euler);
+    }
+
+    setRotation(value) {
+        this._euler.setFromQuaternion(camera.quaternion);
+        this._euler.y -= value * 0.002 * this.pointerSpeed;
+        this._euler.x = Math.max(this._PI_2 - this.maxPolarAngle, Math.min(this._PI_2 - this.minPolarAngle, this._euler.x));
+        camera.quaternion.setFromEuler(this._euler);
+    }
+
+    setAzimuth(value) {
+        this._euler.setFromQuaternion(camera.quaternion);
+        this._euler.x -= value * 0.002 * this.pointerSpeed;
+        this._euler.x = Math.max(this._PI_2 - this.maxPolarAngle, Math.min(this._PI_2 - this.minPolarAngle, this._euler.x));
+        camera.quaternion.setFromEuler(this._euler);
+    }
+
+    getDirection(v) {
+        return v.set(0, 0, - 1).applyQuaternion(camera.quaternion);
+    }
+
+}
