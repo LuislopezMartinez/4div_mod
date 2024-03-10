@@ -83,30 +83,30 @@ class Game extends Process {
     frame() {
         switch (this.st) {
             case 0:
-                for(let i=0; i<1500; i++){
+                for (let i = 0; i < 1500; i++) {
                     new Cosa2D();
                 }
                 fadeOn(1000);
                 this.st = 10;
                 break;
             case 10:
-                console.log(glz.fps);
+                //console.log(glz.fps);
                 break;
         }
     }
 }
 //---------------------------------------------------------------------------------
-class Cosa2D extends Process{
-    constructor(){
+class Cosa2D extends Process {
+    constructor() {
         super();
     }
-    initialize(){
+    initialize() {
         this.setGraph(img[int(random(0, 99))]);
         this.x = random(0, glz.WIDTH);
         this.y = random(0, glz.HEIGHT);
         this.size = 1;
     }
-    frame(){
+    frame() {
         this.angle++;
     }
 }

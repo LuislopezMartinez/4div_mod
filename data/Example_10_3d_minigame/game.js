@@ -107,7 +107,8 @@ class Game extends GameObject {
                 new Muro(0, -30, 5, 180, 10, 10);
 
                 this.idPerso = new Personaje();
-                this.cam = new Camera3d();
+                //this.cam = new Camera3d();
+                this.cam = new glz.Cam();
                 this.cam.setTarget(this.idPerso);
                 this.cam.setTargetDistance(this.offz);
                 this.cam.enableCollision = true;
@@ -115,7 +116,7 @@ class Game extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-
+                console.log(this.cam.lon);
                 break;
         }
     }

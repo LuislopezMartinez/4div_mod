@@ -96,8 +96,8 @@ class Game extends GameObject {
     }
 }
 //---------------------------------------------------------------------------------
-class Cosa2D extends GameObject{
-    constructor(x, y, tipo){
+class Cosa2D extends GameObject {
+    constructor(x, y, tipo) {
         super();
         this.st = 0;
         this.tipo = tipo;
@@ -105,33 +105,32 @@ class Cosa2D extends GameObject{
         this.y = y;
         this.idText;
     }
-    initialize(){
-        this.setGraph(img[int(random(0, 99))]);
-        this.idText = new Write(null, 22, str(this.tipo), CENTER, this.x, this.y-50, BLACK, 1 );
+    initialize() {
+        this.idText = new Write(null, 22, str(this.tipo), CENTER, this.x, this.y - 50, BLACK, 1);
     }
-    frame(){
-        switch(this.st){
+    frame() {
+        switch (this.st) {
             case 0:
                 this.newGraph(50, 50);
                 this.st = 10;
-            break;
+                break;
             case 10:
-                switch(this.tipo){
+                switch (this.tipo) {
                     case 1:
                         this.idText.setText("1-Angle");
                         this.angle++;
-                    break;
+                        break;
                     case 2:
                         this.idText.setText("2-Size");
-                        this.sizex = 1 + 0.9*sin(radians(glz.frameCount));
-                        this.sizey = 1 + 0.9*cos(radians(glz.frameCount));
-                    break;
+                        this.sizex = 1 + 0.9 * sin(radians(glz.frameCount));
+                        this.sizey = 1 + 0.9 * cos(radians(glz.frameCount));
+                        break;
                     case 3:
                         this.idText.setText("3-Tint");
                         this.tint(RED);
-                    break;
+                        break;
                 }
-            break;
+                break;
         }
     }
 }

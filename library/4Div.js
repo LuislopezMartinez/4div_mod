@@ -1427,6 +1427,7 @@ export class GameObject {
         if (this.graph !== undefined) {
             app.stage.removeChild(this.graph);
         }
+        this.graph = undefined;
         let tex = this.createTexture(w, h, WHITE);
         this.setGraph(tex);
     }
@@ -1824,7 +1825,7 @@ window.onload = function () {
     app.ticker.add(_main_core_);
 
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 1, 1000);
+    camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.001, 1000);
     camera.position.z = -50;
     camera.position.y = 20;
     camera.lookAt(scene.position);
@@ -2118,7 +2119,9 @@ export class Write extends GameObject {
         if (exists(this.father)) {
             this.z = this.father.z + 1;
         }
-
+        if (this.font == undefined) {
+            this.font = 'fnt';
+        }
         this.style = undefined;
         this.idText = new PIXI.Text(text);
         this.idText.style.fontSize = this.textSize;
@@ -2224,6 +2227,7 @@ export class Write extends GameObject {
         return this.idText.width;
     }
     getHeight() {
+        console.log(this.idText);
         return this.idText.height;
     }
 }
@@ -4601,7 +4605,6 @@ export class EGUIinputBox extends GameObject {
         this.z = 2048;
         this.focus = false;
         this.prompt_buffer = null;
-
     }
     getFocus() {
         return this.focus;
@@ -5362,6 +5365,7 @@ export class Cam extends GameObject {
         this.object = camera;
         this.target = undefined;
         this.targetHeight = 0;
+        this.targetDistance_before_collision = 0;
         this.targetDistance = 10;
         this.targetDistance_max = 10;
         this.targetDistance_min = 5;
@@ -5381,10 +5385,28 @@ export class Cam extends GameObject {
         this.mouseZoom = true;
         this.mouseControl = true;
 
+        this.lat = 0;
+        this.lon = 0;
+
+        this.enableCollision = false;
+        this.viewHalfX = 0;
+        this.viewHalfY = 0;
+        this.r = new THREE.Raycaster();
+        this.r.camera = camera;             // seteo la camara de raycast por los sprites 3d..
+
+
     }
 
     initialize() {
         signal(this, s_protected);
+
+        this.isLocked = true;
+        this.onMouseMove();
+        this.isLocked = false;
+
+        this.viewHalfX = WIDTH / 2;
+        this.viewHalfY = HEIGHT / 2;
+
     }
 
     finalize() {
@@ -5404,7 +5426,6 @@ export class Cam extends GameObject {
             }
             if (mouse.moved) this.onMouseMove();
         }
-
 
         if (this.mouseZoom) {
             if (mouse.wheelUp) {
@@ -5429,17 +5450,65 @@ export class Cam extends GameObject {
             this.x += dx / 20;
             this.y += dy / 20;
             this.z += dz / 20;
+            this.position.x = this.x;
+            this.position.y = this.y;
+            this.position.z = this.z;
             camera.position.x = this.x;
             camera.position.y = this.y + this.targetHeight;
             camera.position.z = this.z;
             camera.translateZ(this.targetDistance);
         } else {
+            this.position.x = this.x;
+            this.position.y = this.y;
+            this.position.z = this.z;
             camera.position.x = this.x;
             camera.position.y = this.y + this.targetHeight;
             camera.position.z = this.z;
             camera.translateZ(this.targetDistance);
         }
 
+        this.lat = degrees(this._euler.x);
+        this.lon = degrees(this._euler.y) - 180;
+
+
+
+
+        // colision con el mundo..
+        let dir = new THREE.Vector3();
+        if (this.enableCollision) {
+            dir.subVectors(camera.position, this.position).normalize();
+            this.r.set(this.position, dir.subVectors(camera.position, this.position).normalize());
+            const interse = this.r.intersectObjects(scene.children, false);
+
+            if (interse.length > 0) {
+                if (interse[0].object.id_ != this.target.id) {
+                    if (this.targetDistance_before_collision == 0) {
+                        this.targetDistance_before_collision = this.targetDistance;
+                    }
+                    let dist = interse[0].distance - 2;
+                    if (dist >= 0) {
+                        let camera_cross_distance = this.targetDistance - dist;
+                        camera.translateZ(-camera_cross_distance);
+                        this.targetDistance = dist;
+                    }
+                    if (this.targetDistance_preset < this.targetDistance) {
+                        this.targetDistance = this.targetDistance_preset;
+                    }
+
+                }
+            } else {
+                if (this.targetDistance_before_collision > 0) {
+                    let delta = this.targetDistance_before_collision - this.targetDistance;
+                    if (Math.floor(delta) > 0) {
+                        this.targetDistance += delta / 10;
+                    } else {
+                        this.targetDistance_before_collision = 0;
+                    }
+                }
+            }
+        } else {
+            // no enabled collision with world..
+        }
 
     }
     //------------------------------------------
@@ -5468,6 +5537,7 @@ export class Cam extends GameObject {
     setMouseControl(value) {
         this.mouseControl = value;
     }
+
     advance(distance) {
         // movimiento alante / atras..
         this._vector.setFromMatrixColumn(camera.matrix, 0);
@@ -5478,7 +5548,7 @@ export class Cam extends GameObject {
         this.z = this.position.z;
     }
 
-    moveRight(distance) {
+    strafe(distance) {
         // movimiento izquierda / derecha..
         this._vector.setFromMatrixColumn(camera.matrix, 0);
         this.position.addScaledVector(this._vector, distance);
@@ -5510,8 +5580,19 @@ export class Cam extends GameObject {
         camera.quaternion.setFromEuler(this._euler);
     }
 
-    getDirection(v) {
-        return v.set(0, 0, - 1).applyQuaternion(camera.quaternion);
+    getDirection(degreeMode = false) {
+        if (degreeMode) {
+            return new THREE.Vector3().set(0, 0, - 1).applyQuaternion(camera.quaternion).multiplyScalar(90);
+        } else {
+            return new THREE.Vector3().set(0, 0, - 1).applyQuaternion(camera.quaternion);
+        }
     }
 
+    getTargetDistance() {
+        return camera.position.distanceTo(this.position);
+    }
+
+    setCollision(value) {
+        this.enableCollision = value;
+    }
 }

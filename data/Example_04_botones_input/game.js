@@ -104,17 +104,17 @@ class Game extends GameObject {
             case 0:
                 this.b1 = new EGUIbutton(null, 22, "Text button example", 120, 100, WHITE);
                 this.b1.setEvent("EVENT_game_textButton");
-                
+
                 this.b2 = new EGUIbutton(null, 22, "Text button 2", 300, 100, WHITE);
                 this.b2.setEvent("EVENT_game_textButton2");
-                
+
                 this.b3 = new EGUIgbutton(img[0], 520, 100, 1);
                 this.b3.setLabel(null, 12, "LABEL GBUTTON", RED);
                 this.b3.setLabelOffset(0, -35);
-                
+
                 this.in1 = new EGUIinputBox(null, 22, "Tu nombre?", "", glz.WIDTH / 2, 160, 200, 24, false);
                 this.in1.setEvent("EVENT_game_in1");
-                
+
 
                 fadeOn(1000);
                 this.st = 10;
