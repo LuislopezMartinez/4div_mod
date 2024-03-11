@@ -125,8 +125,6 @@ class Game extends GameObject {
         this.botonConectar;
         this.idLabelNickRegistrado;
         this.delay = 0;
-        this.controls = "0000";    // left right up down..
-        this.oldControls = "0000"; // left right up down..
         this.ready = false;
     }
     initialize() {
@@ -331,18 +329,7 @@ class Game extends GameObject {
         new es1.Suelo(img[2]);
     }
     netSendControls() {
-        this.oldControls = this.controls;
-        this.controls = "0000";
-        if (key(_LEFT)) this.controls = this.controls.replaceAt(0, "1");
-        if (key(_RIGHT)) this.controls = this.controls.replaceAt(1, "1");
-        if (key(_UP)) this.controls = this.controls.replaceAt(2, "1");
-        if (key(_DOWN)) this.controls = this.controls.replaceAt(3, "1");
-        if (this.controls != this.oldControls) {
-            let m = new glz.NetMessage();
-            m.add("update_controls");
-            m.add(this.controls);
-            m.send();
-        }
+
     }
     netSendNick() {
         let m = new glz.NetMessage();
@@ -420,7 +407,6 @@ window.onNetEvent = function (msg) {
                 c.setLocalPlayer(true);
             }
             c.set_IDGAME_pointer(idGame);
-            signal(c, s_protected);
             break;
 
         case "playerArround_leave":

@@ -4,10 +4,6 @@ class ClientController extends sprite {
     int st = 0;
     WebSocket sock;
     ArrayList <ClientController> playersArround = new ArrayList <ClientController>();
-    boolean left = false;
-    boolean right = false;
-    boolean up = false;
-    boolean down = false;
     boolean moved = false;
     String nick = "";
     public ClientController( WebSocket sock ) {
@@ -18,6 +14,7 @@ class ClientController extends sprite {
         //this.x = random(0, WIDTH);
         //this.y = random(0, HEIGHT);
         this.setGraph(newGraph(10, 10, WHITE));
+        this.y = 10;
     }
     //------------
     void finalize() {
@@ -39,53 +36,14 @@ class ClientController extends sprite {
     }
     //------------
     void move() {
-        if (this.left) {
-            this.x--;
-            this.moved = true;
-        }
-        if (this.right) {
-            this.x++;
-            this.moved = true;
-        }
-        if (this.up) {
-            this.z--;
-            this.y--;
-            this.moved =true;
-        }
-        if (this.down) {
-            this.z++;
-            this.y++;
-            this.moved = true;
-        }
+        // this.moved = true;
         screenDrawText(null, 22, "id:"+str(this.id), CENTER, this.x, this.y-15, YELLOW, 255);
     }
     //------------
     void RCV_network(StringList msg) {
         println("CLIENT SAYS: ", msg);
         switch(msg.get(0)) {
-        case "update_controls":
-            String controls = msg.get(1);
-            if (controls.charAt(0) == '1') {
-                this.left = true;
-            } else {
-                this.left = false;
-            }
-            if (controls.charAt(1) == '1') {
-                this.right = true;
-            } else {
-                this.right = false;
-            }
-            if (controls.charAt(2) == '1') {
-                this.up = true;
-            } else {
-                this.up = false;
-            }
-            if (controls.charAt(3) == '1') {
-                this.down = true;
-            } else {
-                this.down = false;
-            }
-            break;
+        
 
         case "netSendNick":
             // el cliente quiere setear su nick..
@@ -153,18 +111,6 @@ class ClientController extends sprite {
     //------------
     //------------
     void syncPositionWithPlayersArround() {
-        if (this.left) {
-            this.angle = 180;
-        }
-        if (this.right) {
-            this.angle = 0;
-        }
-        if (this.up) {
-            this.angle = 90;
-        }
-        if (this.down) {
-            this.angle = 270;
-        }
         for (int i=0; i<this.playersArround.size(); i++) {
             ClientController id = this.playersArround.get(i);
             NetMessageWS m = new NetMessageWS(id.sock);
@@ -173,7 +119,6 @@ class ClientController extends sprite {
             m.add("x:"+int(this.x));
             m.add("y:"+int(this.y));
             m.add("z:"+int(this.z));
-            m.add("angle:"+int(this.angle));
             m.send();
         }
     }
