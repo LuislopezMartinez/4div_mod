@@ -5489,7 +5489,7 @@ export class Cam extends GameObject {
                         this.targetDistance_before_collision = this.targetDistance;
                     }
                     let dist = interse[0].distance - 2;
-                    if (dist >= 0 && dist < this.targetDistance_max) {
+                    if (dist >= 0 && dist < this.targetDistance_before_collision) {
                         let camera_cross_distance = this.targetDistance - dist;
                         camera.translateZ(-camera_cross_distance);
                         this.targetDistance = dist;

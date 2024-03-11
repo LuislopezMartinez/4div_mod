@@ -41,7 +41,7 @@ export class NetClient extends glz.GameObject {
                 if (this.local == true) {
 
                     window.idCam = new glz.Cam();
-                    window.idCam.setTargetHeight(30);
+                    window.idCam.setTargetHeight(10);
                     window.idCam.setTarget(this);
                     window.idCam.setTargetDistance(20, 40);
                     window.idCam.setCollision(true);
