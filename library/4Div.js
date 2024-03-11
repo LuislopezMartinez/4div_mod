@@ -5476,6 +5476,9 @@ export class Cam extends GameObject {
         // colision con el mundo..
         let dir = new THREE.Vector3();
         if (this.enableCollision) {
+
+            this.position.y += this.targetHeight;
+
             dir.subVectors(camera.position, this.position).normalize();
             this.r.set(this.position, dir.subVectors(camera.position, this.position).normalize());
             const interse = this.r.intersectObjects(scene.children, false);
@@ -5506,6 +5509,9 @@ export class Cam extends GameObject {
                     }
                 }
             }
+
+            //this.position.y -= this.targetHeight;
+
         } else {
             // no enabled collision with world..
         }

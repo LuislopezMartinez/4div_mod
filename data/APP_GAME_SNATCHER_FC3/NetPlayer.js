@@ -41,7 +41,7 @@ export class NetClient extends glz.GameObject {
                 if (this.local == true) {
 
                     window.idCam = new glz.Cam();
-                    //window.idCam.setTargetHeight(10);
+                    window.idCam.setTargetHeight(30);
                     window.idCam.setTarget(this);
                     window.idCam.setTargetDistance(20, 40);
                     window.idCam.setCollision(true);
@@ -69,7 +69,7 @@ export class NetClient extends glz.GameObject {
                 }
                 break;
             case 30:
-                this.y = 10;
+
                 if (glz.key(glz._SPACE)) {
                     //idCam.advance(1);
                     window.idCam.setRotation(1);
