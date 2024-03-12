@@ -12,7 +12,8 @@ export class Suelo extends glz.GameObject {
         this.anglex = 90;
         this.createMaterial(glz.TEXTURED, this.textura, true, 1);
         this.createPlane(400, 400);
-
+        this.createBody(glz.TYPE_PLANE);
+        this.setStatic(true);
     }
     frame() {
 

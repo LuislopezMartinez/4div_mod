@@ -6,14 +6,14 @@ class ClientController extends sprite {
     ArrayList <ClientController> playersArround = new ArrayList <ClientController>();
     boolean moved = false;
     String nick = "";
+    PImage gr;
     public ClientController( WebSocket sock ) {
         this.sock = sock;
+        this.gr = newGraph(20, 20, WHITE);
     }
     //------------
     void initialize() {
-        //this.x = random(0, WIDTH);
-        //this.y = random(0, HEIGHT);
-        this.setGraph(newGraph(10, 10, WHITE));
+        //this.setGraph(newGraph(10, 10, WHITE));
         this.y = 10;
     }
     //------------
@@ -21,6 +21,9 @@ class ClientController extends sprite {
     }
     //------------
     void frame() {
+
+        screenDrawGraphic(this.gr, this.x, this.z, -this.angle, 100, 100, 255);
+
         switch(this.st) {
         case 0:
             this.updatePlayersArround();
@@ -43,7 +46,7 @@ class ClientController extends sprite {
     void RCV_network(StringList msg) {
         println("CLIENT SAYS: ", msg);
         switch(msg.get(0)) {
-        
+
 
         case "netSendNick":
             // el cliente quiere setear su nick..
@@ -62,6 +65,14 @@ class ClientController extends sprite {
                     m.send();
                 }
             }
+            break;
+
+        case "netSyncPlayer":
+            this.x = int(msg.get(1));
+            this.y = int(msg.get(2));
+            this.z = int(msg.get(3));
+            this.angle = int(msg.get(4));
+            this.moved = true;
             break;
 
         default:
@@ -119,6 +130,7 @@ class ClientController extends sprite {
             m.add("x:"+int(this.x));
             m.add("y:"+int(this.y));
             m.add("z:"+int(this.z));
+            m.add("a:"+int(this.angle));
             m.send();
         }
     }

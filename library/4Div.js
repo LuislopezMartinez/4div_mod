@@ -103,7 +103,6 @@ export const TYPE_BOX = 18;
 export const TYPE_SPHERE = 19;
 export const TYPE_PLANE = 20;
 export const TYPE_CYLINDER = 21;
-export const TYPE_PLANE_2 = 22;
 
 export let keyCode = undefined;
 export const _UP = 38;
@@ -176,6 +175,8 @@ String.prototype.replaceAt = function (index, replacement) {
 
 export let Vector2 = THREE.Vector2;
 export let Vector3 = THREE.Vector3;
+
+let _world_gravity_ = undefined;
 
 //----------------------------------------------------------------------------------
 export function millis() {
@@ -270,7 +271,14 @@ export function parseBoolean(value) {
 }
 //-------
 export function setGravity(x = 0, y = 0, z = 0) {
-    world.gravity.set(x, y, z);
+    if (world == undefined) {
+        _world_gravity_ = new Vector3();
+        _world_gravity_.x = x;
+        _world_gravity_.y = y;
+        _world_gravity_.z = z;
+    } else {
+        world.gravity.set(x, y, z);
+    }
 }
 //-------
 //-------
@@ -1876,7 +1884,11 @@ window.onload = function () {
 function initCannon() {
 
     world = new CANNON.World();
-    world.gravity.set(0, 0, 0);
+    if (_world_gravity_ == undefined) {
+        world.gravity.set(0, 0, 0);
+    } else {
+        world.gravity.set(_world_gravity_.x, _world_gravity_.y, _world_gravity_.z);
+    }
     world.broadphase = new CANNON.NaiveBroadphase();
 
     world.solver.iterations = 10;
@@ -5371,6 +5383,8 @@ export class Cam extends GameObject {
         this.targetDistance_min = 5;
         this.position = new Vector3();
 
+        this._hardness = 0.5;
+
         this._euler = new THREE.Euler(0, 0, 0, 'YXZ');
         this._vector = new Vector3();
         // Set to constrain the pitch of the camera
@@ -5447,9 +5461,9 @@ export class Cam extends GameObject {
             dx = this.target.x - this.x;
             dy = this.target.y - this.y;
             dz = this.target.z - this.z;
-            this.x += dx / 20;
-            this.y += dy / 20;
-            this.z += dz / 20;
+            this.x += (dx * this._hardness);
+            this.y += (dy * this._hardness);
+            this.z += (dz * this._hardness);
             this.position.x = this.x;
             this.position.y = this.y;
             this.position.z = this.z;

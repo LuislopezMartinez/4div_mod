@@ -35,7 +35,7 @@ window.setup = function () {
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(500);                       // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(.1);
+    soundSetMasterVolume(0);
 }
 
 window.main = function () {
@@ -327,6 +327,7 @@ class Game extends GameObject {
     }
     createWorld() {
         new es1.Suelo(img[2]);
+        setGravity(0, -90);
     }
     netSendControls() {
 
@@ -402,9 +403,12 @@ window.onNetEvent = function (msg) {
                         break;
                 }
             }
+
             let c = new net.NetClient(id, x, y, z, mod[0]);    // creo proceso player en red con su ID en el servidor y el nick..
             if (localPlayer == true) {
                 c.setLocalPlayer(true);
+            } else {
+                //..
             }
             c.set_IDGAME_pointer(idGame);
             break;
@@ -412,6 +416,7 @@ window.onNetEvent = function (msg) {
         case "playerArround_leave":
             for (let i = 0; i < vars.netClients.length; i++) {
                 if (vars.netClients[i].remoteId == msg[1].split(":")[1]) {
+                    signal(vars.netClients[i], s_unprotected);
                     signal(vars.netClients[i], s_kill);
                 }
             }
@@ -428,6 +433,7 @@ window.onNetEvent = function (msg) {
         case "playerDisconnect":
             for (let i = 0; i < vars.netClients.length; i++) {
                 if (vars.netClients[i].remoteId == msg[1]) {
+                    signal(vars.netClients[i], s_unprotected);
                     signal(vars.netClients[i], s_kill);
                 }
             }

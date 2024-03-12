@@ -6,7 +6,7 @@
  */
 
 final int CHARAS_DISTANCE_SYNC_ON = 100; // dist. a la que entra el sync..
-final int CHARAS_DISTANCE_SYNC_OFF= 150; // dist. a la que sale el sync..
+final int CHARAS_DISTANCE_SYNC_OFF= 120; // dist. a la que sale el sync..
 
 
 ServerTCP daemon;
