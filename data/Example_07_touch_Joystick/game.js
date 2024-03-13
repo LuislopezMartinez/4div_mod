@@ -24,6 +24,7 @@ window.setup = function () {
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
+    glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
 }
@@ -88,7 +89,7 @@ class Game extends GameObject {
     frame() {
         switch (this.st) {
             case 0:
-                this.idJoy = new JoyStick(glz.WIDTH/2, glz.HEIGHT/2, 200, 200); // x, y, width, height  -> this.is position and interactive area of tactile joy controller..
+                this.idJoy = new JoyStick(glz.WIDTH / 2, glz.HEIGHT / 2, 200, 200); // x, y, width, height  -> this.is position and interactive area of tactile joy controller..
                 new Write(null, 30, "TOCA EL AREA TACTIL EN PANTALLA!", CENTER, glz.WIDTH / 2, 30, YELLOW, 1);
                 this.idText1 = new Write(null, 16, "", RIGHT, 20, 60, WHITE, 1);
                 this.idText2 = new Write(null, 16, "", RIGHT, 120, 60, WHITE, 1);
@@ -97,9 +98,9 @@ class Game extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                this.idText1.setText( "AXIS_X: " + int(this.idJoy.axis.x) );
-                this.idText2.setText( "AXIS_Y: " + int(this.idJoy.axis.y) );
-                this.idText3.setText( "LEFT: " + this.idJoy.left + "  RIGHT: " + this.idJoy.right + "  UP: " + this.idJoy.up + "  DOWN: " + this.idJoy.down );
+                this.idText1.setText("AXIS_X: " + int(this.idJoy.axis.x));
+                this.idText2.setText("AXIS_Y: " + int(this.idJoy.axis.y));
+                this.idText3.setText("LEFT: " + this.idJoy.left + "  RIGHT: " + this.idJoy.right + "  UP: " + this.idJoy.up + "  DOWN: " + this.idJoy.down);
                 break;
         }
     }

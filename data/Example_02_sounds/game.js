@@ -23,6 +23,7 @@ window.setup = function () {
     setMode(1280, 720, false, true);    // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
+    glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
 }

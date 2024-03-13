@@ -178,6 +178,10 @@ export let Vector3 = THREE.Vector3;
 
 let _world_gravity_ = undefined;
 
+let glz_initial_value_camera_position_x = 0;
+let glz_initial_value_camera_position_y = 0;
+let glz_initial_value_camera_position_z = 0;
+
 //----------------------------------------------------------------------------------
 export function millis() {
     return performance.now();
@@ -357,6 +361,9 @@ window.requestFullScreen = function () {
 export function setFog(near, far) {
     fog = new THREE.Fog(backgroundColor, near, far);
     needFogUpdate = true;
+}
+export function getFog() {
+    return fog;
 }
 //-------
 function _fade_instantaneo_() {
@@ -1834,8 +1841,9 @@ window.onload = function () {
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.001, 1000);
-    camera.position.z = -50;
-    camera.position.y = 20;
+    camera.position.x = glz_initial_value_camera_position_x;
+    camera.position.y = glz_initial_value_camera_position_y;
+    camera.position.z = glz_initial_value_camera_position_z;
     camera.lookAt(scene.position);
 
     camera_target = new THREE.Object3D();
@@ -5370,6 +5378,20 @@ function glz_wakeLock() {
 }
 
 //---------------------------------------------------------------------------------
+export function setCameraPosition(x, y, z) {
+    if (camera != undefined) {
+        camera.position.set(x, y, z);
+    } else {
+        glz_initial_value_camera_position_x = x;
+        glz_initial_value_camera_position_y = y;
+        glz_initial_value_camera_position_z = z;
+    }
+}
+
+export function getCamera() {
+    return camera;
+}
+
 //---------------------------------------------------------------------------------
 export class Cam extends GameObject {
     constructor() {

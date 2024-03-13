@@ -12,8 +12,8 @@ CORE:
     signalType( proc_type, signal_type_ );  - tipo de proceso, señal..
     letMeAlone();                       - Manda señal s_kill a todos los procesos activos menos al que realiza la llamada..
     boolean exists( int id );           - comprueba si existe un proceso.
-    Process getObject( property_name, value );  - busca un proceso que tenga la propiedad/variable property_name y comprueba que su valor sea value, devuelve el puntero al proceso si lo encuentra.
-    Process getObjectById( int id );    - devuelve undefined/el puntero al proceso que tiene el numero de id pasado como parametro..
+    GameObject getObject( property_name, value );  - busca un proceso que tenga la propiedad/variable property_name y comprueba que su valor sea value, devuelve el puntero al proceso si lo encuentra.
+    GameObject getObjectById( int id );    - devuelve undefined/el puntero al proceso que tiene el numero de id pasado como parametro..
 
 FILESYSTEM:
     boolean fileExists(string filename);    - Retorna true/false si existe el archivo indicado como parametro. Intenta realizar una consulta XMLHttpRequest() para verificar si el recurso esta disponible.
@@ -37,6 +37,7 @@ SYSTEM:
     HexToRgb( hex );                    - Retorna un array con los valores por componente del parametro expresado como: #rrggbb.
     arrayToHex( color );                - Retorna: RGBToHex(color[0], color[1], color[2]);
     map( value, istart, istop, ostart, ostop, clip_to_output_limits );  - Retorna un valor expresado proporcionalmente en otra escala. ej: map( 5, 0, 10,  0, 100, true ) = 50;
+    color( r, g, b );                   - Crea un color por componentes 0-255, el valor retornado es del tipo 0xrrggbb.
 
 MATH:
     int abs( number );                  - Retorna el valor absoluto de un numero con decimales..
@@ -70,11 +71,14 @@ SCREEN:
     Process screenDrawSprite(texture_path, x = 0, y = 0, z = 0, anglex = 0, angley = 0, anglez = 0, size = 1);  - Crea un grafico 2d "en el entorno 3D" y devuelve el puntero al proceso que lo controla. (billboard).
 
 3D:
+    setCameraPosition( x, y, z );           - Establece una posicion inicial para la camara.
+    getCamera();                            - Retorna la camara nativa usada por Three.js internamente.
     setAmbientLight( color, intensidad );   - Establece una iluminacion ambiental para en ambito 3d.
     enableShadows( true/false );            - Activa o desactiva las sombras del render 3d..
     setBackgroundColor( color );            - Establece el color de fondo del ambito 3d que es el que se pinta con mayor profundidad.
     setFadingColor( color );                - Establece un color para el fundido de pantalla..
     setFog( float near, float far );        - Establece una distancia minima y maxima para la niebla..
+    getFog();                               - Retorna el objeto 'fog' nativo usado internamente por Three.js.
     setTexture( mesh, texture );            - Aplica una textura a todas las geometrias de un modelo 3d.
     mixamoMerger( models[] );               - Dado un array de modelos 3d obtenidos del servicio 'Mixamo' de Adobe, se creara un modelo unico con todas las animaciones de todos los modelos. Se utiliza para unir las animaciones que crea gratuitamente el servicio mixamo en un unico modelo y poder ser usado asi facilmente en el juego.
 

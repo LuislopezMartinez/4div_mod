@@ -33,9 +33,10 @@ window.setup = function () {
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
+    glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(500);                       // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(0);
+    soundSetMasterVolume(0.1);
 }
 
 window.main = function () {

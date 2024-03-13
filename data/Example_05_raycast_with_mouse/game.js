@@ -24,6 +24,7 @@ window.setup = function () {
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 250);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
+    glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(1000);                       // enciendo la pantalla durante 1 segundo..
 }
@@ -87,7 +88,7 @@ class Game extends GameObject {
             case 0:
                 new Write(null, 32, "TOCA LA CAJA!", CENTER, glz.WIDTH / 2, 30, BLUE, 1);
                 this.z = 10;
-                
+
                 for (let i = 0; i < 1000; i++) {
                     new Cosa3d();
                 }
