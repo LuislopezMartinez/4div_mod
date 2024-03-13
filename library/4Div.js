@@ -1263,12 +1263,17 @@ export class GameObject {
     //------------------------------------------------------------
     setTexture(texture) {
         if (this.mesh == undefined) return;
+        let t = undefined;
+        if (typeof texture === 'string' || texture instanceof String) {
+            t = loadTexture(texture);
+            texture = t;
+        }
         this.mesh.traverse(function (child) {
             if (child instanceof THREE.Mesh) {
-                if (child.material.map != undefined) {
-                    child.material.map = texture;
-                    child.material.needsUpdate = true;
-                }
+                //if (child.material.map != undefined) {
+                child.material.map = texture;
+                child.material.needsUpdate = true;
+                //}
             }
         });
     }
@@ -4099,7 +4104,7 @@ function loadModelFBX(filename, container, pos) {
             container[pos] = object;
         },
         (xhr) => {
-            console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+            //console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
         },
         (error) => {
             console.log(error)

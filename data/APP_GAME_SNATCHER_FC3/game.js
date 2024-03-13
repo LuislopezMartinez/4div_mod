@@ -61,7 +61,10 @@ window.main = function () {
                 loader[2] = new LoadFonts(list);
 
                 let lista = [];
-                lista.push("data/APP_GAME_SNATCHER_FC3/models/OBJ/character-soldier.obj");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/characterMedium.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/idle.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/run.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/jump.fbx");
                 loader[3] = new LoadModels(lista);
                 ST = 20;
             }

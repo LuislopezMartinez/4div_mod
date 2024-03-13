@@ -65,6 +65,10 @@ export class NetClient extends glz.GameObject {
                     this.y = this.RCVoffset.y;
                     this.z = this.RCVoffset.z;
                 }
+                this.disposeMesh();
+                this.size = 0.05;
+                this.setModel(this.modelo);
+                this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/material.png");
                 this.st = 10;
                 break;
             case 10:
