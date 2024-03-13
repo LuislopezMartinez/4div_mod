@@ -21,7 +21,7 @@ export class NetClient extends glz.GameObject {
         this.right = false;
         this.up = false;
         this.down = false;
-        this.velocity = 0.25;
+        this.velocity = 0.20;
 
         this.syncro_frame_counter = 0;  // los frames que hace que se sincronizó el objeto..
         this.syncro_distance = 10;
@@ -29,6 +29,8 @@ export class NetClient extends glz.GameObject {
         this.syncro_y = 0;
         this.syncro_z = 0;
         this.syncro_a = 0;
+
+        this.moved = false;
 
     }
     initialize() {
@@ -65,10 +67,7 @@ export class NetClient extends glz.GameObject {
                     this.y = this.RCVoffset.y;
                     this.z = this.RCVoffset.z;
                 }
-                this.disposeMesh();
-                this.size = 0.05;
-                this.setModel(this.modelo);
-                this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/material.png");
+                new NetClient_SUB_animator();
                 this.st = 10;
                 break;
             case 10:
@@ -86,8 +85,8 @@ export class NetClient extends glz.GameObject {
                 break;
             case 22:
                 if (this.idGame.ready == true) {
-                    this.idTextNick.visible = true;
-                    this.visible = true;
+                    //this.idTextNick.visible = true;
+                    //this.visible = true;
                     this.st = 30;
                 }
                 break;
@@ -140,23 +139,28 @@ export class NetClient extends glz.GameObject {
     }
 
     controls() {
+        this.moved = false;
         if (glz.key(glz._UP)) {
             this.up = true;
+            this.moved = true;
         } else {
             this.up = false;
         }
         if (glz.key(glz._DOWN)) {
             this.down = true;
+            this.moved = true;
         } else {
             this.down = false;
         }
         if (glz.key(glz._LEFT)) {
             this.left = true;
+            this.moved = true;
         } else {
             this.left = false;
         }
         if (glz.key(glz._RIGHT)) {
             this.right = true;
+            this.moved = true;
         } else {
             this.right = false;
         }
@@ -187,7 +191,7 @@ export class NetClient extends glz.GameObject {
         dy /= 30;
         dz /= 30;
 
-        const max = 0.25;
+        const max = 0.20;
         if (dx > max) dx = max;
         if (dx < -max) dx = -max;
         if (dy > max) dy = max;
@@ -214,3 +218,91 @@ export class NetClient extends glz.GameObject {
     }
 
 }
+//---------------------------------------------------------------------------------
+class NetClient_SUB_animator extends glz.GameObject {
+    constructor() {
+        super();
+        this.st = 0;
+        this.x = this.father.x;
+        this.y = this.father.y - 5;
+        this.z = this.father.z;
+        glz.signal(this, glz.s_protected);
+        this.modelo;
+
+    }
+    initialize() {
+        this.visible = false;
+        this.size = 0.05;
+        // unir modelo y animaciones en un solo modelo multi-animado..
+        this.modelo = glz.mixamoMerger(this.father.modelo);
+        // establecer el nuevo modelo a este objeto..
+        this.setModel(this.modelo);
+        // aplicar skin..
+        this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/material.png");
+        this.clipSet(0);
+        this.clipPlay();
+    }
+    finalize() {
+
+    }
+    frame() {
+        if (!glz.exists(this.father)) {
+            glz.signal(this, glz.s_unprotected);
+            glz.signal(this, glz.s_kill);
+        }
+        switch (this.st) {
+            case 0:
+                if (this.father.idGame.ready == true) {
+                    this.visible = true;
+                    this.st = 10;
+                }
+                break;
+            case 10:
+                this.x = this.father.x;
+                this.y = this.father.y - 5;
+                this.z = this.father.z;
+
+                if (this.father.local) {
+                    // ajusto angulo del personaje cuando me muevo..
+                    if (this.father.moved) {
+                        this.angley = window.idCam.lon;
+                    }
+
+
+                    if (this.father.moved) {
+                        let anima = 0;
+                        if (this.father.up) anima = 1;
+                        if (this.father.down) anima = 1;
+                        if (this.father.left) anima = 3;
+                        if (this.father.right) anima = 2;
+                        this.clipSwitch(anima, 250);
+                    } else {
+                        this.clipSwitch(0, 250);
+                    }
+
+
+
+
+
+                } else {
+                    this.angley = this.father.remoteAngle;
+
+                    let dx = this.x - this.oldx;
+                    let dz = this.z - this.oldz;
+
+                    let v = glz.abs(dx) + glz.abs(dz);
+
+                    if (v > 0.05) {
+                        this.clipSwitch(1, 250);
+                    } else {
+                        this.clipSwitch(0, 250);
+                    }
+
+
+                }
+
+                break;
+        }
+    }
+}
+//---------------------------------------------------------------------------------

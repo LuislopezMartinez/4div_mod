@@ -409,6 +409,7 @@ export class GameObject {
         this.z = 0;
         this.oldx = 0;
         this.oldy = 0;
+        this.oldz = 0;
         this._cx = 0.5;
         this._cy = 0.5;
         this.angle = 0; // angle z..
@@ -455,6 +456,9 @@ export class GameObject {
         this.mixerClips = [];
         this.selectedClip = undefined;
         this.offset_mesh_y = 0;         // si un modelo 3d no esta centrado, con este parametro podemos centrarlo a su collider..
+
+        this.clipSwitchAvailable = true;    // en false estamos esperando el fin de una transicion de animacion.. no se puede cambiar hasta true..
+
     }
     //-------
     getClassName() {
@@ -474,6 +478,7 @@ export class GameObject {
         // 2D layer..
         this.oldx = this.x;
         this.oldy = this.y;
+        this.oldz = this.z;
 
         if (this.graph != undefined) {
             this.graph.visible = this.visible;
@@ -1375,12 +1380,17 @@ export class GameObject {
     //-------
     clipSwitch(num, time_ms = 500, repetitions = Infinity) {
         if (num == this.selectedClip) return;
+        if (this.clipSwitchAvailable == false) return;
         this.mixerClips[num].fadeIn(time_ms / 1000);
         this.mixerClips[num].play();
         this.mixerClips[this.selectedClip].fadeOut(time_ms / 1000);
         let sc = this.selectedClip; // valor del clip a parar..
         let a = this;               // puntero a este objeto..
-        setTimeout(function () { a.mixerClips[sc].stop(); }, time_ms);
+        setTimeout(function () {
+            a.mixerClips[sc].stop();
+            a.clipSwitchAvailable = true;
+        }, time_ms);
+        this.clipSwitchAvailable = false;
         this.selectedClip = num;
     }
     //-------
@@ -5643,3 +5653,49 @@ export class Cam extends GameObject {
         this.enableCollision = value;
     }
 }
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+export class Tts {
+    constructor() {
+        // motor de sintesis de voz integrado en los navegadores actuales..
+        this.ready = false;
+        window.speechSynthesis.id_glz_tts_object = this;
+        window.speechSynthesis.addEventListener("voiceschanged", () => {
+            speechSynthesis.id_glz_tts_object.ready = true;
+        });
+        this.add("");
+    }
+    isReady() {
+        return this.ready;
+    }
+    add(text_message) {
+        const message = new SpeechSynthesisUtterance(text_message);
+        speechSynthesis.speak(message);
+    }
+    reset() {
+        speechSynthesis.cancel();
+    }
+    pause() {
+        speechSynthesis.pause();
+    }
+    resume() {
+        speechSynthesis.resume();
+    }
+    isPaused() {
+        // indica si esta pausado..
+        return speechSynthesis.paused;
+    }
+    idPending() {
+        // indica si hay mensajes pendientes de reproducir..
+        return speechSynthesis.pending;
+    }
+    isSpeaking() {
+        // indica si esta reproduciendo algun mensaje..
+        speechSynthesis.speaking;
+    }
+    getVoices() {
+        return speechSynthesis.getVoices();
+    }
+}
+//---------------------------------------------------------------------------------
+

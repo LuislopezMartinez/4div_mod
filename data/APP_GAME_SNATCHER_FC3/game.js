@@ -36,7 +36,7 @@ window.setup = function () {
     glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(500);                       // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(0.1);
+    soundSetMasterVolume(0);
 }
 
 window.main = function () {
@@ -61,10 +61,11 @@ window.main = function () {
                 loader[2] = new LoadFonts(list);
 
                 let lista = [];
-                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/characterMedium.fbx");
+                //lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/characterMedium.fbx");
                 lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/idle.fbx");
-                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/run.fbx");
-                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/jump.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk_side_1.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk_side_2.fbx");
                 loader[3] = new LoadModels(lista);
                 ST = 20;
             }
@@ -194,6 +195,14 @@ class Game extends GameObject {
 
                     new es0.Logo(img[1]);
                     new es0.Marco(WIDTH / 2, HEIGHT / 2, PINK);
+
+
+
+                    this.tts = new glz.Tts();
+                    //this.tts.add("Hola mundo!");
+
+
+
                     fadeOn(1000);
                     this.st = 20;
                 }
@@ -323,7 +332,6 @@ class Game extends GameObject {
                 break;
 
             case 2000:
-                this.netSendControls();
                 this.checkConnectionStatus();
                 break;
 
@@ -333,9 +341,7 @@ class Game extends GameObject {
         new es1.Suelo(img[2]);
         setGravity(0, -90);
     }
-    netSendControls() {
 
-    }
     netSendNick() {
         let m = new glz.NetMessage();
         m.add("netSendNick");
@@ -408,7 +414,7 @@ window.onNetEvent = function (msg) {
                 }
             }
 
-            let c = new net.NetClient(id, x, y, z, mod[0]);    // creo proceso player en red con su ID en el servidor y el nick..
+            let c = new net.NetClient(id, x, y, z, mod);    // creo proceso player en red con su ID en el servidor y el nick..
             if (localPlayer == true) {
                 c.setLocalPlayer(true);
             } else {
