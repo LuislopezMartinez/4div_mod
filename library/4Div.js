@@ -241,10 +241,14 @@ export function degrees(radians) {
     return radians * 180 / Math.PI;
 }
 //-------
-export function method(codeToExecute) {
+export function method(codeToExecute, param = undefined) {
     //var tmpFunc = new Function(codeToExecute);
     //tmpFunc();
-    window[codeToExecute]();
+    if (param != undefined) {
+        window[codeToExecute](param);
+    } else {
+        window[codeToExecute]();
+    }
 }
 //-------
 export function str(number) {
@@ -1773,6 +1777,10 @@ class Mouse extends GameObject {
         this.position = new THREE.Vector2();
         this.movementX = 0;
         this.movementY = 0;
+
+        this.eventStartName = undefined;
+        this.eventEndName = undefined;
+
     }
     initialize() {
     }
@@ -1805,7 +1813,28 @@ class Mouse extends GameObject {
         this.raycaster.setFromCamera(this.position, camera);
         this.intersects = this.raycaster.intersectObjects(scene.children, true);
     }
+    setEventStart(eventName) {
+        this.eventStartName = eventName;
+    }
+    setEventEnd(eventName) {
+        this.eventEndName = eventName;
+    }
+    getTouchPointIntersects(numPoint) {
+        let pos = new THREE.Vector2();
+        let ray = new THREE.Raycaster();
+        pos.x = (this.points[numPoint].x / WIDTH) * 2 - 1;
+        pos.y = - (this.points[numPoint].y / HEIGHT) * 2 + 1;
+        this.raycaster.setFromCamera(pos, camera);
+        return ray.intersectObjects(scene.children, true);
+    }
     setPoint(index, active, x_, y_) {
+        if (this.points[index].active) {
+            if (this.eventEndName != undefined)
+                if (active == false) method(this.eventEndName, { id: index, x: x_, y: y_ });
+        } else {
+            if (this.eventStartName != undefined)
+                if (active == true) method(this.eventStartName, { id: index, x: x_, y: y_ });
+        }
         var finalx = (x_ * WIDTH) / window.innerWidth;
         var finaly = (y_ * HEIGHT) / window.innerHeight;
         this.points[index].active = active;

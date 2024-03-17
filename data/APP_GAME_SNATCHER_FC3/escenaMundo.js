@@ -1,4 +1,5 @@
 import * as glz from '../../library/4Div.js';
+import { NetClient } from './NetPlayer.js';
 import * as vars from './globalVariables.js';
 
 //---------------------------------------------------------------------------------
@@ -124,7 +125,104 @@ export class TouchControls extends glz.GameObject {
     }
 }
 //---------------------------------------------------------------------------------
+export class Target extends glz.GameObject {
+    constructor(img, fnt) {
+        super();
+        this.st = 0;
+        this.gr = img[6];
+        glz.signal(this, glz.s_protected);
+        this.x = 80;
+        this.y = 80;
+        this.text_nick = new glz.Write(fnt[0], 16, "nick", glz.CENTER, this.x, this.y - 20, glz.WHITE, 1);
+    }
+    initialize() {
+        this.visible = false;
+        this.setGraph(this.gr);
+    }
+    finalize() { }
+    frame() {
 
+
+
+        this.targetRuntime();
+        if (glz.key(glz._ESC)) window.localPlayer.target = undefined;
+        switch (this.st) {
+            case 0:
+                if (window.localPlayer.target != undefined) {
+                    this.visible = true;
+                } else {
+                    this.visible = false;
+                }
+                if (this.visible) {
+                    this.text_nick.visible = true;
+
+
+                    if (window.localPlayer.target instanceof NetClient) {
+                        this.text_nick.setText(window.localPlayer.target.nick);
+                    }
+
+
+
+                } else {
+                    this.text_nick.visible = false;
+                }
+                break;
+            case 10:
+                break;
+        }
+    }
+    targetRuntime() {
+        if (glz.isMobile()) {
+            for (let i = 0; i < glz.gameObjects.length; i++) {
+                let c = glz.gameObjects[i];
+                if (c.targeteable != undefined) {
+                    let collision = false;
+                    collision = glz.mouse.intersect(c);
+                    if (collision) {
+                        if (window.localPlayer == c.getTarget()) {
+                            window.localPlayer.target = undefined;
+                        } else {
+                            window.localPlayer.target = c.getTarget();
+                        }
+                    }
+                }
+            }
+            //console.log(glz.mouse.left);
+        } else {
+            if (glz.mouse.left) {
+                let found = false;
+                for (let i = 0; i < glz.gameObjects.length; i++) {
+                    let c = glz.gameObjects[i];
+                    if (c.targeteable != undefined) {
+                        let collision = false;
+                        if (glz.mouse.intersect(c)) collision = true;
+                        if (collision) {
+                            found = true;
+                            if (window.localPlayer == c.getTarget()) {
+                                window.localPlayer.target = undefined;
+                            } else {
+                                window.localPlayer.target = c.getTarget();
+                            }
+                        }
+                    }
+                }
+                if (!found) window.localPlayer.target = undefined;
+            }
+        }
+
+        // control de perdida del target..
+        if (window.localPlayer.target != undefined) {
+            if (glz.exists(window.localPlayer.target)) {
+                // si el target existe pero se vuelve intargeteable..
+                if (window.localPlayer.target.targeteable == false) window.localPlayer.target = undefined;
+            } else {
+                // si el target deja de existir..
+                window.localPlayer.target = undefined;
+            }
+        }
+
+    }
+}
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------

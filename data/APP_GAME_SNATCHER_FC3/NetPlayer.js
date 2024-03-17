@@ -311,6 +311,9 @@ class NetClient_SUB_animator extends glz.GameObject {
         this.targeteable = true;
 
     }
+    getTarget() {
+        return this.father;
+    }
     initialize() {
         this.visible = false;
         this.size = 0.05;
@@ -328,36 +331,13 @@ class NetClient_SUB_animator extends glz.GameObject {
     }
 
 
-
-    targetRuntime() {
-        // control de target a esta entidad..
-        let collision = false;
-        if (glz.isMobile()) {
-            collision = glz.mouse.intersect(this);
-        } else {
-            if (glz.mouse.left && glz.mouse.intersect(this)) collision = true;
-        }
-        if (collision) {
-            if (this.targeteable == true) {
-                if (window.localPlayer == this.father) {
-                    window.localPlayer.target = undefined;
-                } else {
-                    window.localPlayer.target = this.father;
-                }
-            }
-        }
-    }
-
-
-
     frame() {
         if (!glz.exists(this.father)) {
             glz.signal(this, glz.s_unprotected);
             glz.signal(this, glz.s_kill);
         } else {
 
-            if (window.localPlayer != undefined) console.log(window.localPlayer.target);
-            this.targetRuntime();
+            //..
 
         }
         switch (this.st) {
@@ -378,7 +358,6 @@ class NetClient_SUB_animator extends glz.GameObject {
                         this.angley = window.idCam.lon;
                     }
 
-
                     if (this.father.moved) {
                         let anima = 0;
                         if (this.father.up) anima = 1;
@@ -389,10 +368,6 @@ class NetClient_SUB_animator extends glz.GameObject {
                     } else {
                         this.clipSwitch(0, 250);
                     }
-
-
-
-
 
                 } else {
 
@@ -410,8 +385,6 @@ class NetClient_SUB_animator extends glz.GameObject {
                             this.angley -= glz.abs(delta) / 20;
                         }
                     }
-                    //this.angley = this.father.remoteAngle;
-
 
                     let dx = this.x - this.oldx;
                     let dz = this.z - this.oldz;

@@ -121,8 +121,7 @@ class Game extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-
-                this.st = 20;
+                //this.st = 20;
                 break;
         }
     }

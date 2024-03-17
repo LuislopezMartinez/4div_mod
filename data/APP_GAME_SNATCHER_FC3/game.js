@@ -346,6 +346,7 @@ class Game extends GameObject {
         } else {
             //..
         }
+        new es1.Target(img, fnt);
     }
 
     netSendNick() {
