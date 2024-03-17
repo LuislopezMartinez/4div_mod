@@ -273,6 +273,9 @@ export function isNumber(value) {
 export function parseBoolean(value) {
     return (value === "true");
 }
+export function parseFloat(value) {
+    return window.parseFloat(value);
+}
 //-------
 export function setGravity(x = 0, y = 0, z = 0) {
     if (world == undefined) {
@@ -313,6 +316,9 @@ export function setAmbientLightIntensity(value) {
 //----------------------------------------------------------------------------------
 export function setFps(value) {
     app.ticker.maxFPS = value;
+}
+export function getFps() {
+    return app.ticker.maxFPS;
 }
 //-------
 export function enableShadows(value) {
@@ -771,11 +777,21 @@ export class GameObject {
         console.log("TO DO");
     }
     //------------------------------------------------------------
-    worldToScreen() {
+    worldToScreen(pos = undefined) {
         var position = new THREE.Vector3();
-        position.x = this.x;
-        position.y = this.y;
-        position.z = this.z;
+        if (pos == undefined) {
+            position.x = this.x;
+            position.y = this.y;
+            position.z = this.z;
+        } else {
+            if (pos instanceof THREE.Vector3) {
+                position = pos;
+            } else {
+                console.error("ERROR: Parameter isn´t a THREE.Vector3() object!");
+                return undefined;
+            }
+        }
+
         var vector = position.project(camera);
         vector.x = (vector.x + 1) / 2 * WIDTH;
         vector.y = -(vector.y - 1) / 2 * HEIGHT;
@@ -2262,7 +2278,7 @@ export class Write extends GameObject {
         return this.idText.width;
     }
     getHeight() {
-        console.log(this.idText);
+        //console.log(this.idText);
         return this.idText.height;
     }
 }
@@ -2678,6 +2694,10 @@ class Teclado extends GameObject {
         this._mays_ = false;
         this._number_ = false;
         this.input_controller = input_object_to_pass_text;
+        this.eventName = "";
+    }
+    setEvent(eventName) {
+        this.eventName = eventName;
     }
     onClick_teclaEspecial(key) {
         switch (key) {
@@ -2742,7 +2762,9 @@ class Teclado extends GameObject {
             case "return":
                 signal(this, s_kill);
                 signalType(GLZ_KEYBOARD_NORMAL_KEY_TYPE, s_kill);
-                this.input_controller.setText(this.buffer);
+                if (this.input_controller != undefined) {
+                    this.input_controller.setText(this.buffer);
+                }
                 signal(this.idText, s_kill);
                 signalType(GLZ_KEYBOARD_SPECIAL_KEY_TYPE, s_kill);
                 //unlockEGUI();
@@ -3756,6 +3778,21 @@ export class DirectionalLight extends GameObject {
     }
 }
 //-------
+export class SpotLight extends GameObject {
+    constructor() {
+        super();
+    }
+    initialize() {
+
+    }
+    finalize() {
+
+    }
+    frame() {
+
+    }
+}
+//-------
 export class PointLight extends GameObject {
     constructor(col, intensity) {
         super();
@@ -4246,7 +4283,6 @@ export class EGUIcheckButton extends GameObject {
         this.locked = false;
         this.type = "EGUI_ELEMENT";
         this.label = undefined;
-        this.locked = false;
         this.disabled = false;
     }
     initialize() {
@@ -5445,28 +5481,31 @@ export class Cam extends GameObject {
         this.r = new THREE.Raycaster();
         this.r.camera = camera;             // seteo la camara de raycast por los sprites 3d..
 
+        this.mouseKey = 'left';
 
     }
 
     initialize() {
         signal(this, s_protected);
-
         this.isLocked = true;
         this.onMouseMove();
         this.isLocked = false;
-
         this.viewHalfX = WIDTH / 2;
         this.viewHalfY = HEIGHT / 2;
-
     }
 
     finalize() {
 
     }
 
+    setMouseKey(value = LEFT) {
+        // 'left' 'rigth' 'center'..
+        this.mouseKey = value;
+    }
+
     frame() {
         if (this.mouseControl) {
-            if (mouse.left) {
+            if (mouse[this.mouseKey]) {
                 if (!this.isLocked) {
                     this.isLocked = true;
                 }
@@ -5623,6 +5662,14 @@ export class Cam extends GameObject {
         camera.quaternion.setFromEuler(this._euler);
     }
 
+    setOrientation(vec) {
+        this._euler.setFromQuaternion(camera.quaternion);
+        this._euler.y -= vec.x * 0.002 * this.pointerSpeed;
+        this._euler.x -= vec.y * 0.002 * this.pointerSpeed;
+        this._euler.x = Math.max(this._PI_2 - this.maxPolarAngle, Math.min(this._PI_2 - this.minPolarAngle, this._euler.x));
+        camera.quaternion.setFromEuler(this._euler);
+    }
+
     setRotation(value) {
         this._euler.setFromQuaternion(camera.quaternion);
         this._euler.y -= value * 0.002 * this.pointerSpeed;
@@ -5698,4 +5745,7 @@ export class Tts {
     }
 }
 //---------------------------------------------------------------------------------
-
+export function getCaller() {
+    return _id_;
+}
+//---------------------------------------------------------------------------------

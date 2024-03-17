@@ -7,6 +7,7 @@ class ClientController extends sprite {
     boolean moved = false;
     String nick = "";
     PImage gr;
+    String controls = "";
     public ClientController( WebSocket sock ) {
         this.sock = sock;
         this.gr = newGraph(20, 20, WHITE);
@@ -48,30 +49,37 @@ class ClientController extends sprite {
         switch(msg.get(0)) {
 
 
+        case "netSendChatMessage":
+            this.syncChatMessageWithPlayersArround(msg);
+            break;
+
         case "netSendNick":
             // el cliente quiere setear su nick..
             this.nick = msg.get(1);
             break;
 
+            /*
         case "netGetNickByID":
-            // el cliente pregunta por el nick de un id en concreto..
-            int id = int(msg.get(1));
-            for (int i=0; i<this.playersArround.size(); i++) {                // recorro lista clientes..
-                if (this.playersArround.get(i).id == id) {
-                    NetMessageWS m = new NetMessageWS(this.sock);
-                    m.add("netGetNickByID");
-                    m.add(msg.get(1));
-                    m.add(this.playersArround.get(i).nick);
-                    m.send();
-                }
-            }
-            break;
+             // el cliente pregunta por el nick de un id en concreto..
+             int id = int(msg.get(1));
+             for (int i=0; i<this.playersArround.size(); i++) {                // recorro lista clientes..
+             if (this.playersArround.get(i).id == id) {
+             NetMessageWS m = new NetMessageWS(this.sock);
+             m.add("netGetNickByID");
+             m.add(msg.get(1));
+             m.add(this.playersArround.get(i).nick);
+             m.send();
+             }
+             }
+             break;
+             */
 
         case "netSyncPlayer":
             this.x = int(msg.get(1));
             this.y = int(msg.get(2));
             this.z = int(msg.get(3));
             this.angle = int(msg.get(4));
+            this.controls = msg.get(5);
             this.moved = true;
             break;
 
@@ -101,20 +109,23 @@ class ClientController extends sprite {
             float dist = this.getDist(clients.get(i));
             if (dist < CHARAS_DISTANCE_SYNC_ON) {
                 if (!this.playersArround.contains(clients.get(i))) {  // y si no esta ya sincronizado..
-                    this.playersArround.add(clients.get(i));          // lo añado a la lista del sync..
-                    // PLAYER ENTRA EN RANGO..
-                    NetMessageWS m = new NetMessageWS(clients.get(i).sock);
-                    m.add("playerArround_enter");
-                    m.add("id:"+this.id);
-                    m.add("x:"+int(this.x));
-                    m.add("y:"+int(this.y));
-                    m.add("z:"+int(this.z));
-                    if (clients.get(i).sock == this.sock) {
-                        m.add("localPlayer:"+true);
-                    } else {
-                        m.add("localPlayer:"+false);
+                    if (!this.nick.equals("")) {
+                        this.playersArround.add(clients.get(i));          // lo añado a la lista del sync..
+                        // PLAYER ENTRA EN RANGO..
+                        NetMessageWS m = new NetMessageWS(clients.get(i).sock);
+                        m.add("playerArround_enter");
+                        m.add("id:"+this.id);
+                        m.add("x:"+int(this.x));
+                        m.add("y:"+int(this.y));
+                        m.add("z:"+int(this.z));
+                        if (clients.get(i).sock == this.sock) {
+                            m.add("localPlayer:"+true);
+                        } else {
+                            m.add("localPlayer:"+false);
+                        }
+                        m.add("nick:"+this.nick);
+                        m.send();
                     }
-                    m.send();
                 }
             }
         }
@@ -131,10 +142,22 @@ class ClientController extends sprite {
             m.add("y:"+int(this.y));
             m.add("z:"+int(this.z));
             m.add("a:"+int(this.angle));
+            m.add("controls:" + this.controls);
             m.send();
         }
     }
     //------------
+    void syncChatMessageWithPlayersArround(StringList msg) {
+        for (int i=0; i<this.playersArround.size(); i++) {
+            ClientController id = this.playersArround.get(i);
+            NetMessageWS m = new NetMessageWS(id.sock);
+            m.add("netSendChatMessage");
+            m.add("id:"+this.id);
+            m.add(msg.get(1));
+            m.add("msg:"+msg.get(2));
+            m.send();
+        }
+    }
     //------------
 }
 //---------------------------------------------------------------------

@@ -23,10 +23,10 @@ let fnt = [];
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
-let idPlayer;
+
 
 window.setup = function () {
-    setBackgroundColor(0x333333);          // color de fondo de pantalla..
+    setBackgroundColor(BLACK);          // color de fondo de pantalla..
     setFadingColor(BLACK);           // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
     setMode(1280, 720, false, true);   // define la resolucion grafica..
@@ -51,7 +51,7 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 5);
+                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 7);
                 loader[1] = new LoadSounds("data/APP_GAME_SNATCHER_FC3/sounds/", 5);
 
                 let list = [];
@@ -338,8 +338,14 @@ class Game extends GameObject {
         }
     }
     createWorld() {
+        new es1.Chat(img[7], fnt[0]);
         new es1.Suelo(img[2]);
         setGravity(0, -90);
+        if (glz.isMobile()) {
+            new es1.TouchControls();
+        } else {
+            //..
+        }
     }
 
     netSendNick() {
@@ -393,6 +399,7 @@ window.onNetEvent = function (msg) {
             let y = 0;
             let z = 0;
             let localPlayer = false;
+            let nick = "entidad desconocida";
             for (let i = 1; i < msg.length; i++) {
                 let params = msg[i].split(":");
                 switch (params[0]) {
@@ -411,9 +418,11 @@ window.onNetEvent = function (msg) {
                     case "localPlayer":
                         localPlayer = glz.parseBoolean(params[1]);
                         break;
+                    case "nick":
+                        nick = params[1];
+                        break;
                 }
             }
-
             let c = new net.NetClient(id, x, y, z, mod);    // creo proceso player en red con su ID en el servidor y el nick..
             if (localPlayer == true) {
                 c.setLocalPlayer(true);
@@ -421,6 +430,7 @@ window.onNetEvent = function (msg) {
                 //..
             }
             c.set_IDGAME_pointer(idGame);
+            c.setNick(nick);
             break;
 
         case "playerArround_leave":
@@ -454,6 +464,14 @@ window.onNetEvent = function (msg) {
                 if (vars.netClients[i].remoteId == msg[1]) {
                     vars.netClients[i].nick = msg[2];
                     vars.netClients[i].st = 22;
+                }
+            }
+            break;
+
+        case "netSendChatMessage":
+            for (let i = 0; i < vars.netClients.length; i++) {
+                if (vars.netClients[i].remoteId == msg[1].split(":")[1]) {
+                    vars.netClients[i].RCVChatMessage(msg);
                 }
             }
             break;

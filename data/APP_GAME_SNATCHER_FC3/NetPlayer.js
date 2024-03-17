@@ -1,6 +1,7 @@
 import * as glz from '../../library/4Div.js';
 import * as vars from './globalVariables.js';
 window.idCam = undefined;
+window.localPlayer = undefined;
 //---------------------------------------------------------------------------------
 export class NetClient extends glz.GameObject {
     constructor(id, x, y, z, model) {
@@ -22,6 +23,7 @@ export class NetClient extends glz.GameObject {
         this.up = false;
         this.down = false;
         this.velocity = 0.20;
+        this.idJoy = { up: false, down: false, left: false, right: false };
 
         this.syncro_frame_counter = 0;  // los frames que hace que se sincronizó el objeto..
         this.syncro_distance = 10;
@@ -29,17 +31,25 @@ export class NetClient extends glz.GameObject {
         this.syncro_y = 0;
         this.syncro_z = 0;
         this.syncro_a = 0;
-
         this.moved = false;
+        this.subAnimatorModel = undefined;
 
+        this.remoteControls = "0000";
+
+        this.target = undefined;
     }
     initialize() {
         glz.signal(this, glz.s_protected);
-        console.log(this.remoteId);
     }
     finalize() {
         glz.signal(this.idTextNick, glz.s_unprotected);
         glz.signal(this.idTextNick, glz.s_kill);
+        for (var i = 0; i < vars.netClients.length; i++) {
+            if (this == vars.netClients[i]) {
+                vars.netClients.splice(i, 1);
+            }
+        }
+        glz.signal(this.idJoy, glz.s_kill);
     }
     setLocalPlayer(value) {
         this.local = value;
@@ -47,46 +57,52 @@ export class NetClient extends glz.GameObject {
     set_IDGAME_pointer(value) {
         this.idGame = value;
     }
+    setNick(value) {
+        this.nick = value;
+    }
+    updateNickPosition() {
+        let vec = this.mesh.position;
+        let pos = this.worldToScreen(vec.add(new glz.Vector3(0, 15, 0)));
+        this.idTextNick.x = pos.x;
+        this.idTextNick.y = pos.y;
+        this.idTextNick.setText(this.remoteId + " - " + this.nick);
+    }
     frame() {
         switch (this.st) {
             case 0:
-                this.idTextNick.visible = false;
                 this.visible = false;
                 this.size = 1;
                 this.y = 10;
                 this.createSphere(5);
                 if (this.local == true) {
+                    window.localPlayer = this;
+                    this.idTextNick.setColor(glz.YELLOW);
                     this.createBody(glz.TYPE_SPHERE);
                     window.idCam = new glz.Cam();
                     window.idCam.setTargetHeight(10);
                     window.idCam.setTarget(this);
-                    window.idCam.setTargetDistance(20, 40);
+                    window.idCam.setTargetDistance(10, 40);
                     window.idCam.setCollision(true);
+                    if (glz.isMobile()) {
+                        window.idCam.setMouseControl(false);
+                    } else {
+                        window.idCam.setMouseControl(true);
+                        window.idCam.setMouseKey('right');
+                    }
+
+
                 } else {
+                    this.idTextNick.setColor(glz.WHITE);
                     this.x = this.RCVoffset.x;
                     this.y = this.RCVoffset.y;
                     this.z = this.RCVoffset.z;
                 }
-                new NetClient_SUB_animator();
+                this.subAnimatorModel = new NetClient_SUB_animator();
                 this.st = 10;
                 break;
             case 10:
-
-                let m = new glz.NetMessage();
-                m.add("netGetNickByID");
-                m.add(this.remoteId);
-                m.send();
-
-                this.st = 20;
-                break;
-            case 20:
-                // limbo..
-                // esperando nick de este player..
-                break;
-            case 22:
                 if (this.idGame.ready == true) {
-                    //this.idTextNick.visible = true;
-                    //this.visible = true;
+
                     this.st = 30;
                 }
                 break;
@@ -94,13 +110,14 @@ export class NetClient extends glz.GameObject {
             case 30:
 
                 if (this.local) {
+
                     this.controls();
                     this.moverLocal();
                     this.syncPlayer();
                 } else {
                     this.moverRemoto();
                 }
-
+                this.updateNickPosition();
                 break;
         }
     }
@@ -129,36 +146,43 @@ export class NetClient extends glz.GameObject {
         this.syncro_z = glz.int(this.z);
         this.syncro_a = window.idCam.lon;
 
+        let controls = "";
+        if (this.left) { controls += 'L'; } else { controls += '0'; }
+        if (this.right) { controls += 'R'; } else { controls += '0'; }
+        if (this.up) { controls += 'U'; } else { controls += '0'; }
+        if (this.down) { controls += 'D'; } else { controls += '0'; }
+
         let m = new glz.NetMessage();
         m.add("netSyncPlayer");
         m.add(this.syncro_x);
         m.add(this.syncro_y);
         m.add(this.syncro_z);
         m.add(this.syncro_a.toFixed(2));
+        m.add(controls);
         m.send();
     }
 
     controls() {
         this.moved = false;
-        if (glz.key(glz._UP)) {
+        if (glz.key(glz._UP) || this.idJoy.up) {
             this.up = true;
             this.moved = true;
         } else {
             this.up = false;
         }
-        if (glz.key(glz._DOWN)) {
+        if (glz.key(glz._DOWN) || this.idJoy.down) {
             this.down = true;
             this.moved = true;
         } else {
             this.down = false;
         }
-        if (glz.key(glz._LEFT)) {
+        if (glz.key(glz._LEFT) || this.idJoy.left) {
             this.left = true;
             this.moved = true;
         } else {
             this.left = false;
         }
-        if (glz.key(glz._RIGHT)) {
+        if (glz.key(glz._RIGHT) || this.idJoy.right) {
             this.right = true;
             this.moved = true;
         } else {
@@ -187,6 +211,7 @@ export class NetClient extends glz.GameObject {
         let dx = this.x - this.RCVoffset.x;
         let dy = this.y - this.RCVoffset.y;
         let dz = this.z - this.RCVoffset.z;
+
         dx /= 30;
         dy /= 30;
         dz /= 30;
@@ -205,18 +230,72 @@ export class NetClient extends glz.GameObject {
     }
 
     RCVNetPosition(msg) {
-        let id = msg[1].split(":")[1];
+        //let id = msg[1].split(":")[1];
         let x = msg[2].split(":")[1];
         let y = msg[3].split(":")[1];
         let z = msg[4].split(":")[1];
         let angle = msg[5].split(":")[1];
+        let remoteControls = msg[6].split(":")[1];
 
         this.RCVoffset.x = x;
         this.RCVoffset.y = y;
         this.RCVoffset.z = z;
         this.remoteAngle = angle;
+        this.remoteControls = remoteControls;
     }
 
+    RCVChatMessage(msg) {
+        let mensaje = this.nick + ": " + msg[3].split(":")[1];
+        let c = new NetClient_SUB_chatMessage(mensaje);
+        c.father = this;
+    }
+
+}
+//---------------------------------------------------------------------------------
+class NetClient_SUB_chatMessage extends glz.GameObject {
+    constructor(mensaje) {
+        super();
+        this.st = 0;
+        this.mensaje = mensaje;
+        this.idText;
+        this.offset_y = 0;
+        this.duracion = 0;
+        this.delta_alpha = 0;
+    }
+    initialize() {
+        let trimmed_message = this.trimWhiteSpaces(this.mensaje);
+        this.idText = new glz.Write(null, 24, trimmed_message, glz.CENTER, this.x, this.y, glz.WHITE, 1);
+        let palabras = this.mensaje.split(" ").length - 1;
+        this.duracion = palabras * (100 / 60);    // 200 palabras por minuto lectura normald e una persona..
+        this.duracion *= glz.getFps();
+        this.delta_alpha = 0.9 / this.duracion;
+    }
+    finalize() {
+        glz.signal(this.idText, glz.s_kill);
+    }
+    frame() {
+        this.duracion--;
+        if (this.duracion == 0) glz.signal(this, glz.s_kill);
+        this.update();
+    }
+    update() {
+        this.idText.x = this.father.idTextNick.x;
+        this.idText.y = this.father.idTextNick.y - 20 - this.offset_y;
+        this.idText.alpha -= this.delta_alpha;
+        this.offset_y += 0.25;
+    }
+    trimWhiteSpaces(str) {
+        let output = "";
+        output += str[0];
+        for (let i = 1; i < str.length; i++) {
+            if (str[i - 1] == ' ' && str[i] == ' ') {
+                //..
+            } else {
+                output += str[i];
+            }
+        }
+        return output;
+    }
 }
 //---------------------------------------------------------------------------------
 class NetClient_SUB_animator extends glz.GameObject {
@@ -228,6 +307,8 @@ class NetClient_SUB_animator extends glz.GameObject {
         this.z = this.father.z;
         glz.signal(this, glz.s_protected);
         this.modelo;
+
+        this.targeteable = true;
 
     }
     initialize() {
@@ -245,10 +326,39 @@ class NetClient_SUB_animator extends glz.GameObject {
     finalize() {
 
     }
+
+
+
+    targetRuntime() {
+        // control de target a esta entidad..
+        let collision = false;
+        if (glz.isMobile()) {
+            collision = glz.mouse.intersect(this);
+        } else {
+            if (glz.mouse.left && glz.mouse.intersect(this)) collision = true;
+        }
+        if (collision) {
+            if (this.targeteable == true) {
+                if (window.localPlayer == this.father) {
+                    window.localPlayer.target = undefined;
+                } else {
+                    window.localPlayer.target = this.father;
+                }
+            }
+        }
+    }
+
+
+
     frame() {
         if (!glz.exists(this.father)) {
             glz.signal(this, glz.s_unprotected);
             glz.signal(this, glz.s_kill);
+        } else {
+
+            if (window.localPlayer != undefined) console.log(window.localPlayer.target);
+            this.targetRuntime();
+
         }
         switch (this.st) {
             case 0:
@@ -285,20 +395,40 @@ class NetClient_SUB_animator extends glz.GameObject {
 
 
                 } else {
-                    this.angley = this.father.remoteAngle;
+
+                    let delta = this.angley - this.father.remoteAngle;
+                    if (this.angley < this.father.remoteAngle) {
+                        if (glz.abs(delta) > 180) {
+                            // evitar giros mayores de 180º casuales..
+                        } else {
+                            this.angley += glz.abs(delta) / 20;
+                        }
+                    } else if (this.angley > this.father.remoteAngle) {
+                        if (glz.abs(delta) > 180) {
+                            // evitar giros mayores de 180º casuales..
+                        } else {
+                            this.angley -= glz.abs(delta) / 20;
+                        }
+                    }
+                    //this.angley = this.father.remoteAngle;
+
 
                     let dx = this.x - this.oldx;
                     let dz = this.z - this.oldz;
-
                     let v = glz.abs(dx) + glz.abs(dz);
-
                     if (v > 0.05) {
-                        this.clipSwitch(1, 250);
+
+                        if (this.father.remoteControls.includes("L")) {
+                            this.clipSwitch(3, 250);
+                        } else if (this.father.remoteControls.includes("R")) {
+                            this.clipSwitch(2, 250);
+                        } else {
+                            this.clipSwitch(1, 250);
+                        }
+
                     } else {
                         this.clipSwitch(0, 250);
                     }
-
-
                 }
 
                 break;
