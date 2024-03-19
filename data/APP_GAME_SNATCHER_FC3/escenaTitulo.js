@@ -79,29 +79,22 @@ export class Humo extends glz.GameObject {
 }
 //---------------------------------------------------------------------------------
 export class Suelo extends glz.GameObject {
-    constructor(gr) {
+    constructor(tex, tex_normal) {
         super();
-        this.st = 0;
-        this.gr = gr;
-        this.counter = 0;
+        this.textura = tex;
+        this.textura_normal = tex_normal;
+    }
+    initialize() {
+        this.anglex = 90;
+        this.createMaterial(glz.TEXTURED, this.textura, true, 10);
+        this.setNormalMaterial(this.textura_normal);
+        this.createPlane(200, 200);
+        //this.createBody(glz.TYPE_PLANE);
+        //this.setStatic(true);
     }
     frame() {
-        switch (this.st) {
-            case 0:
-                this.anglex = 90;
-                this.angley = 180;
-                this.createMaterial(glz.TEXTURED, this.gr, true, 1);
-                this.createPlane(100, 100);
-                this.st = 10;
-                break;
-            case 10:
-                this.counter -= 0.0005;
-                // animateUV();
-                this.setTextureOffet(0, this.counter);
-                break;
-            case 20:
-                break;
-        }
+        this.angle += 0.025;
+
     }
 }
 //---------------------------------------------------------------------------------

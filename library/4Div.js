@@ -3988,7 +3988,15 @@ function _main_core_() {
                     removeObject3D(this.mesh);
                 } else {
                     gameObjects[i].mesh.geometry.dispose();
-                    gameObjects[i].mesh.material.dispose();
+                    if (Array.isArray(gameObjects[i].mesh.material)) {
+                        for (let j = 0; j < gameObjects[i].mesh.material.length; j++) {
+                            gameObjects[i].mesh.material[j].dispose();
+
+                        }
+                    } else {
+                        gameObjects[i].mesh.material.dispose();
+                    }
+                    //gameObjects[i].mesh.material.dispose();
                 }
                 scene.remove(gameObjects[i].mesh);
             }
@@ -5841,7 +5849,6 @@ export class Tts {
         window.speechSynthesis.addEventListener("voiceschanged", () => {
             speechSynthesis.id_glz_tts_object.ready = true;
         });
-        console.log(window.speechSynthesis);
         this.add("");
     }
     isReady() {
@@ -5905,6 +5912,9 @@ export class SkyBox extends GameObject {
     }
     finalize() { }
     frame() {
+        this.x = camera.position.x;
+        this.y = camera.position.z;
+        this.z = camera.position.z;
     }
 }
 //---------------------------------------------------------------------------------

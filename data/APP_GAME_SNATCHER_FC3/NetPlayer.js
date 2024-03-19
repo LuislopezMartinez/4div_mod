@@ -380,7 +380,7 @@ class NetClient_SUB_animator extends glz.GameObject {
         // establecer el nuevo modelo a este objeto..
         this.setModel(this.modelo);
         // aplicar skin..
-        this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/skins/criminalMaleA.png");
+        this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/skins/survivorFemaleA.png");
         this.clipSet(0);
         this.clipPlay();
     }

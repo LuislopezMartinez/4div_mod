@@ -172,9 +172,12 @@ class Game extends GameObject {
                 if (!glz.fading) {
                     letMeAlone();
                     soundPlay(snd[1]);
-                    new es0.Suelo(img[2]);
+                    new es0.Suelo(dataPath + "images/textures/Scifi_Hex_Wall_Albedo.jpg", dataPath + "images/textures/Scifi_Hex_Wall_normal.jpg");
+                    this.sky = new glz.SkyBox(dataPath + "images/textures/skybox_red/");
+                    this.sky.size = 300;
+                    this.sky['frame'] = function () { this.anglex += 0.1; };
                     for (let i = 0; i < 30; i++) {
-                        new es0.Humo(img[3]);
+                        //new es0.Humo(img[3]);
                     }
 
                     if (!data.contains("date")) {
@@ -194,7 +197,7 @@ class Game extends GameObject {
                         this.idLabelNickRegistrado.z = this.botonContinuar.z + 1;
                     }
 
-                    let c = new Write(fnt[1], 22, "[4DIV_MOD] WebGL 2 GAME FRAMEWORK by Erkosone.", CENTER, WIDTH / 2, 20, BLACK, 1);
+                    let c = new Write(fnt[1], 22, "[4DIV_MOD] WebGL 2 GAME FRAMEWORK by Erkosone.", CENTER, WIDTH / 2, 20, WHITE, 1);
 
                     new es0.Logo(img[1]);
                     new es0.Marco(WIDTH / 2, HEIGHT / 2, PINK);

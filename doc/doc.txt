@@ -196,6 +196,7 @@ class GameObject()
     .setRotationX( value );             - Aplica una rotacion en el eje X.
     .setRotationY( value );             - Aplica una rotacion en el eje Y.
     .setTexture( filepath );            - Establece una textura para el material de la primitiva grafica 3d del proceso.
+    .setTextureOffset( x, y );          - Establece un desplazamiento de la textura sobre su sueperficie en X e Y respectivamente.
     .setModel( model );                 - Establece un modelo 3d para el proceso actual.
     .clipSet( num );                    - Establece una animacion para el modelo del proceso.
     .clipPlay( repeticiones );          - Reproduce la animacion activa un numero de veces pasado como parametro, por defecto si no se indica nada el valor es Infinity.
