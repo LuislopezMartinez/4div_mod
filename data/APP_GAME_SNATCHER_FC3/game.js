@@ -23,7 +23,7 @@ let fnt = [];
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
-
+window.TTS = new glz.Tts();
 
 window.setup = function () {
     setBackgroundColor(BLACK);          // color de fondo de pantalla..
@@ -31,7 +31,7 @@ window.setup = function () {
     enableShadows(false);               // activa el sistema de sobras..
     setMode(1280, 720, false, true);   // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
-    setFog(0, 250);                     // configura la niebla del entorno 3d..
+    setFog(0, 500);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
@@ -131,6 +131,9 @@ class Game extends GameObject {
         this.idLabelNickRegistrado;
         this.delay = 0;
         this.ready = false;
+        this.idTouchControls = undefined;
+        this.idTargetManager = undefined;
+        this.idChat = undefined;
     }
     initialize() {
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
@@ -338,17 +341,17 @@ class Game extends GameObject {
         }
     }
     createWorld() {
-        new es1.Chat(img[7], fnt[0]);
-        new es1.Suelo(img[2]);
+        setAmbientLight(WHITE, 0.2);
+        let luz = new glz.SpotLight(WHITE, 10000);
+        luz.y = 40;
+        this.idChat = new es1.Chat(img[7], fnt[0]);
+        new es1.Suelo(dataPath + "images/textures/Scifi_Hex_Wall_Albedo.jpg", dataPath + "images/textures/Scifi_Hex_Wall_normal.jpg");
         setGravity(0, -90);
-        if (glz.isMobile()) {
-            new es1.TouchControls();
-        } else {
-            //..
-        }
-        new es1.Target(img, fnt);
+        if (glz.isMobile()) this.idTouchControls = new es1.TouchControls();
+        this.idTargetManager = new es1.Target(img, fnt);
+        let sky = new glz.SkyBox(dataPath + "images/textures/skybox_red/");
+        sky.size = 500;
     }
-
     netSendNick() {
         let m = new glz.NetMessage();
         m.add("netSendNick");
@@ -424,7 +427,7 @@ window.onNetEvent = function (msg) {
                         break;
                 }
             }
-            let c = new net.NetClient(id, x, y, z, mod);    // creo proceso player en red con su ID en el servidor y el nick..
+            let c = new net.NetClient(id, x, y, z, mod, fnt[0]);    // creo proceso player en red con su ID en el servidor y el nick..
             if (localPlayer == true) {
                 c.setLocalPlayer(true);
             } else {

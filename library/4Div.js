@@ -175,6 +175,7 @@ String.prototype.replaceAt = function (index, replacement) {
 
 export let Vector2 = THREE.Vector2;
 export let Vector3 = THREE.Vector3;
+export let Raycaster = THREE.Raycaster;
 
 let _world_gravity_ = undefined;
 
@@ -769,6 +770,29 @@ export class GameObject {
         }
         //this.material.transparent = true;   // para activar el alpha de los procesos en las primitivas 3d..
         return this.material;
+    }
+    //------------------------------------------------------------
+    setNormalMaterial(texture_normal) {
+        if (this.material == undefined) {
+            console.log("setNormalMaterial() -> ERROR: this.material is undefined!");
+            return;
+        }
+        let texture = undefined;
+        if (texture_normal instanceof THREE.Texture) {
+            texture = texture_normal;
+        } else if (texture_normal instanceof PIXI.Texture) {
+            texture = new THREE.TextureLoader().load(texture_normal.textureCacheIds[0]);  // uso normbre de archivo guardado en textura de pixi..
+        } else {
+            texture = new THREE.TextureLoader().load(texture_normal); // uso nombre de archivo directamente..
+
+        }
+        this.material.normalMap = texture;
+        //this.material.normalScale.set(2, 2);
+        this.material.needsUpdate = true;
+    }
+    setNormalMaterialScale(x, y) {
+        this.material.normalScale.set(x, y);
+        this.material.needsUpdate = true;
     }
     //------------------------------------------------------------
     setTextureOffet(off_x, off_y) {
@@ -1637,7 +1661,11 @@ export class GameObject {
     getTouch() {
         return { x: mouse.points[this.touch_id].x, y: mouse.points[this.touch_id].y };
     }
+    getTouchId() {
+        return this.touch_id;
+    }
     touchPersists() {
+        if (this.touch_id == undefined) return false;
         return mouse.points[this.touch_id].active;
     }
     //=======================================================
@@ -1819,24 +1847,28 @@ class Mouse extends GameObject {
     setEventEnd(eventName) {
         this.eventEndName = eventName;
     }
-    getTouchPointIntersects(numPoint) {
+    /*
+    getTouchPointIntersects(event) {
         let pos = new THREE.Vector2();
         let ray = new THREE.Raycaster();
-        pos.x = (this.points[numPoint].x / WIDTH) * 2 - 1;
-        pos.y = - (this.points[numPoint].y / HEIGHT) * 2 + 1;
+        pos.x = (event.x / WIDTH) * 2 - 1;
+        pos.y = - (event.y / HEIGHT) * 2 + 1;
         this.raycaster.setFromCamera(pos, camera);
         return ray.intersectObjects(scene.children, true);
     }
+    */
     setPoint(index, active, x_, y_) {
-        if (this.points[index].active) {
-            if (this.eventEndName != undefined)
-                if (active == false) method(this.eventEndName, { id: index, x: x_, y: y_ });
-        } else {
-            if (this.eventStartName != undefined)
-                if (active == true) method(this.eventStartName, { id: index, x: x_, y: y_ });
-        }
         var finalx = (x_ * WIDTH) / window.innerWidth;
         var finaly = (y_ * HEIGHT) / window.innerHeight;
+
+        if (this.points[index].active) {
+            if (this.eventEndName != undefined)
+                if (active == false) method(this.eventEndName, { id: index, x: finalx, y: finaly });
+        } else {
+            if (this.eventStartName != undefined)
+                if (active == true) method(this.eventStartName, { id: index, x: finalx, y: finaly });
+        }
+
         this.points[index].active = active;
         this.points[index].x = finalx;
         this.points[index].y = finaly;
@@ -2214,6 +2246,9 @@ export class Write extends GameObject {
         }
 
         app.stage.addChild(this.idText);
+    }
+    setFnt(fnt) {
+        this.font = fnt;
     }
     initialize() {
         if (this.style === undefined) {
@@ -3808,17 +3843,55 @@ export class DirectionalLight extends GameObject {
 }
 //-------
 export class SpotLight extends GameObject {
-    constructor() {
+    constructor(color = WHITE, intensity = 100) {
         super();
+        this.light = undefined;
+        this.target_set = false;
+        this.color = color;
+        this.intensity = intensity;
+        this.distance = 1000;
+        this.penumbra = 0.05;
+        this.decay = 2;
     }
     initialize() {
-
+        this.light = new THREE.SpotLight(this.color, this.intensity);
+        this.light.position.set(this.x, this.y, this.z);
+        this.light.distance = this.distance;
+        this.light.decay = this.decay;
+        this.light.penumbra = this.penumbra;
+        scene.add(this.light);
     }
     finalize() {
-
+        scene.remove(this.light);
+        this.light.dispose();
     }
     frame() {
+        this.light.position.set(this.x, this.y, this.z);
+    }
 
+    setTargetPosition(a, b, c) {
+        if (arguments.length == 1) {
+            if (a instanceof Vector3) {
+                this.light.target.position.set(a);
+            } else {
+                console.log("ERROR: argument not is a Vector3!");
+            }
+        } else {
+            this.light.target.position.set(a, b, c);
+        }
+        this.light.target.updateMatrixWorld();
+    }
+
+    setTexture(tex) {
+        let texture = undefined;
+        if (tex instanceof THREE.Texture) {
+            texture = tex;
+        } else if (tex instanceof PIXI.Texture) {
+            texture = new THREE.TextureLoader().load(tex.textureCacheIds[0]);  // uso normbre de archivo guardado en textura de pixi..
+        } else {
+            texture = new THREE.TextureLoader().load(tex); // uso nombre de archivo directamente..
+        }
+        this.light.map = texture;
     }
 }
 //-------
@@ -3828,8 +3901,9 @@ export class PointLight extends GameObject {
         this.color = col;
         this.intensity = intensity;
         this.light;
-        this.target;
+        this.target = undefined;
         this.targetHeight = 0;
+        this.target_set = false;
     }
     initialize() {
         this.light = new THREE.PointLight(this.color, this.intensity);
@@ -3843,11 +3917,15 @@ export class PointLight extends GameObject {
             this.z = this.target.z;
             this.light.position.set(this.x, this.y, this.z);
         } else {
-            signal(this, s_kill);
+            if (this.target_set) {
+                signal(this, s_kill);   // si se seteo un target.. este objeto desaparece con el..
+            }
+            this.light.position.set(this.x, this.y, this.z);
         }
     }
     setTarget(target) {
         this.target = target;
+        this.target_set = true;
     }
     setTargetHeight(value) {
         this.targetHeight = value;
@@ -4313,6 +4391,13 @@ export class EGUIcheckButton extends GameObject {
         this.type = "EGUI_ELEMENT";
         this.label = undefined;
         this.disabled = false;
+        this.focus = false;
+    }
+    getFocus() {
+        return this.focus;
+    }
+    setFocus(focus) {
+        this.focus = focus;
     }
     initialize() {
         this.newGraph(this.w, this.h);
@@ -4328,7 +4413,7 @@ export class EGUIcheckButton extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                if (this.touched() && !this.locked && !lockUi && !this.disabled) {
+                if (this.touched() && !this.locked && !lockUi && !this.disabled || !this.locked && !lockUi && this.focus && !this.disabled) {
                     lockUi = true;
                     this.value = !this.value;
                     if (this.value) {
@@ -4343,6 +4428,7 @@ export class EGUIcheckButton extends GameObject {
                 if (!this.touchPersists()) {
                     lockUi = false;
                     method(this.eventName);
+                    this.focus = false;
                     this.st = 10;
                 }
                 break;
@@ -4424,6 +4510,13 @@ export class EGUIbutton extends GameObject {
         this.z = 2048;
         this.w = undefined;
         this.h = undefined;
+        this.focus = false;
+    }
+    getFocus() {
+        return this.focus;
+    }
+    setFocus(focus) {
+        this.focus = focus;
     }
     setArea(w, h) {
         this.w = w;
@@ -4448,7 +4541,7 @@ export class EGUIbutton extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                if (this.touched() && !this.locked && !lockUi && !this.disabled) {
+                if (this.touched() && !this.locked && !lockUi && !this.disabled || !this.locked && !lockUi && this.focus && !this.disabled) {
                     lockUi = true;
                     this.tint(this.tint2);
                     this.st = 20;
@@ -4459,6 +4552,7 @@ export class EGUIbutton extends GameObject {
                     lockUi = false;
                     method(this.eventName);
                     this.tint(this.tint1);
+                    this.focus = false;
                     this.st = 10;
                 }
                 break;
@@ -4554,6 +4648,13 @@ export class EGUIgbutton extends GameObject {
         this.offx_label = 0;
         this.offy_label = 0;
         this.textAlign = CENTER;
+        this.focus = false;
+    }
+    getFocus() {
+        return this.focus;
+    }
+    setFocus(focus) {
+        this.focus = focus;
     }
     frame() {
         switch (this.st) {
@@ -4562,7 +4663,7 @@ export class EGUIgbutton extends GameObject {
                 this.st = 10;
                 break;
             case 10:
-                if (this.touched() && !this.locked && !lockUi && !this.disabled) {
+                if (this.touched() && !this.locked && !lockUi && !this.disabled || !this.locked && !lockUi && this.focus && !this.disabled) {
                     lockUi = true;
                     if (this.only1gr == true) {
                         this.tint(this.tint1);
@@ -4581,6 +4682,7 @@ export class EGUIgbutton extends GameObject {
                     } else {
                         this.setGraph(this.gr);
                     }
+                    this.focus = false;
                     this.st = 10;
                 }
                 break;
@@ -5739,13 +5841,15 @@ export class Tts {
         window.speechSynthesis.addEventListener("voiceschanged", () => {
             speechSynthesis.id_glz_tts_object.ready = true;
         });
+        console.log(window.speechSynthesis);
         this.add("");
     }
     isReady() {
         return this.ready;
     }
-    add(text_message) {
+    add(text_message, rate = 1) {
         const message = new SpeechSynthesisUtterance(text_message);
+        message.rate = rate;
         speechSynthesis.speak(message);
     }
     reset() {
@@ -5776,5 +5880,31 @@ export class Tts {
 //---------------------------------------------------------------------------------
 export function getCaller() {
     return _id_;
+}
+//---------------------------------------------------------------------------------
+export class SkyBox extends GameObject {
+    constructor(path) {
+        super();
+        this.path = path;
+    }
+    initialize() {
+        this.material = [];
+        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'right.png'), side: 1 }));
+        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'left.png'), side: 1 }));
+        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'up.png'), side: 1 }));
+        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'down.png'), side: 1 }));
+        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'front.png'), side: 1 }));
+        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'back.png'), side: 1 }));
+        var skyboxGeom = new THREE.BoxGeometry(1, 1, 1);
+        this.mesh = new THREE.Mesh(skyboxGeom, this.material);
+        this.mesh.flipSided = true;
+        scene.add(this.mesh);
+    }
+    setSize(size) {
+        this.size = size;
+    }
+    finalize() { }
+    frame() {
+    }
 }
 //---------------------------------------------------------------------------------

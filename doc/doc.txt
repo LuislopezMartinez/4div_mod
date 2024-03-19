@@ -5,6 +5,7 @@ Autor: Luis lopez martinez.
 ------------------------------------------------------------------
 CORE:
     int _id_                            - Puntero al proceso actual en ejecucion, usado en funciones de evento para acceder al proceso que las ha llamado..
+    getCaller();                        - Retorna _id_, ya que es el proceso que esta actualmente en ejecucion.
     gameObjects                         - Array de procesos de la aplicacion, usando en busquedas con procesos..
     class GameObject();                 - Objeto/entidad base del motor. Conocida tambien como 'proceso'. Es un objeto con uid que puede controlar un modelo 3d o un sprite entre otras muchas cosas..
     long frameCount                     - Contador de frames de la aplicación. Es un contador incremental interno.
@@ -12,8 +13,8 @@ CORE:
     signalType( proc_type, signal_type_ );  - tipo de proceso, señal..
     letMeAlone();                       - Manda señal s_kill a todos los procesos activos menos al que realiza la llamada..
     boolean exists( int id );           - comprueba si existe un proceso.
-    GameObject getObject( property_name, value );  - busca un proceso que tenga la propiedad/variable property_name y comprueba que su valor sea value, devuelve el puntero al proceso si lo encuentra.
-    GameObject getObjectById( int id );    - devuelve undefined/el puntero al proceso que tiene el numero de id pasado como parametro..
+    getObject( property_name, value );  - busca un proceso que tenga la propiedad/variable property_name y comprueba que su valor sea value, devuelve el puntero al proceso si lo encuentra.
+    getObjectById( int id );            - devuelve undefined/el puntero al proceso que tiene el numero de id pasado como parametro..
 
 FILESYSTEM:
     boolean fileExists(string filename);    - Retorna true/false si existe el archivo indicado como parametro. Intenta realizar una consulta XMLHttpRequest() para verificar si el recurso esta disponible.
@@ -62,7 +63,10 @@ MOUSE:
         .wheelUp:                       - Estado de la rueda del raton arriba.. boolean
         .wheelDown:                     - Estado de la rueda del raton abajo.. boolean
         .intersects[]:                  - Lista de objetos 3d que intersectan con el puntero del mouse.. array
-        .intersect( Process )           - Retorna true/false si el proceso pasado por parametro colisiona con el mouse "siempre que el proceso tenga un modelo 3d".
+        .intersect( GameObject )        - Retorna true/false si el proceso pasado por parametro colisiona con el mouse "siempre que el proceso tenga un modelo 3d".
+        .setEventStart( eventName )     - Establece un nombre de funcion callback para cuando un dedo toca la pantalla del dispositivo.
+        .setEventEnd( eventName )       - Establece un nombre de funcion callback para cuando un dede deja de tocar la pantalla.
+
 
 SCREEN:
     fadeOn( int milliseconds );         - Funde la pantalla "activa" durante un tiempo pasado como parametro..
@@ -154,6 +158,8 @@ class GameObject()
     .createTorus( radius, weight );     - Crea una primitiva grafica 3d del tipo donut/toroide.
     .createIcosahedron( radius );       - Crea una primitiva grafica 3d del tipo icosaedro.
     .createMaterial( shaderType, color, texture_repeat = false ); - Crea un material para la primitiva grafica del proceso. tipos BASIC, LAMBERT, WIRED, STANDARD, TOON, PHONG, TEXTURED. Consultar los ejemplos para mas informacion.
+    .setNormalMaterial( texture );      - Aplica un mapa como material de normal para que le afecte la luz. Acepta pixi iamge, texture o texture_path_string.
+    .setNormalMaterialScale( x, y );    - Porcentaje de efecto para el material normal. 0-1 valores standar, de ahi en adelante son efectos aumentados.
     .worldToScreen();                   - Retorna un vector XY con la posicion en la que aparece un objeto 3d en pantalla. Usado para colocar textos 2d junto a un objeto 3d.
     .createBody( tipo );                - Crea un collider para el proceso tomando como referencia la primitiva grafica 3d del proceso, existen varios tipos de collider: TYPE_CYLINDER, TYPE_BOX, TYPE_SPHERE, TYPE_PLANE.
     .setEventCollisionStart( f_name );  - Crea una funcion callback que sera llamada cuando el proceso inicie una colision.
@@ -248,6 +254,9 @@ TO-DO:
     
     class DirectionalLight();
     class PointLight();
+    class SpotLight();
+
+    class Tts();
     
     
     include( filename );

@@ -20,6 +20,9 @@ export class Chat extends glz.GameObject {
         this.img = img;
         this.fnt = fnt;
     }
+    openChatRemotely() {
+        this.st = 90;
+    }
     initialize() {
         this.buttonChat = new glz.EGUIgbutton(this.img, 35, glz.HEIGHT - 30);
         this.buttonChat.setEvent("event_chat_buttonChat");
@@ -28,14 +31,17 @@ export class Chat extends glz.GameObject {
 
     }
     frame() {
-        //console.log(glz.gameObjects.length);
-        //console.log(this.buttonChat.st, this.buttonChat.locked);
         switch (this.st) {
             case 0:
-                // limbo..
+                if (!glz.exists(this.in)) {
+                    this.flag_open_chat_remotely = false;
+                }
                 break;
-            case 10:
 
+            case 90:
+                if (!glz.exists(this.in)) {
+                    this.st = 100;
+                }
                 break;
 
             case 100:
@@ -71,13 +77,15 @@ export class Chat extends glz.GameObject {
 }
 //---------------------------------------------------------------------------------
 export class Suelo extends glz.GameObject {
-    constructor(tex) {
+    constructor(tex, tex_normal) {
         super();
         this.textura = tex;
+        this.textura_normal = tex_normal;
     }
     initialize() {
         this.anglex = 90;
-        this.createMaterial(glz.TEXTURED, this.textura, true, 1);
+        this.createMaterial(glz.TEXTURED, this.textura, true, 10);
+        this.setNormalMaterial(this.textura_normal);
         this.createPlane(400, 400);
         this.createBody(glz.TYPE_PLANE);
         this.setStatic(true);
@@ -142,9 +150,13 @@ export class Target extends glz.GameObject {
     finalize() { }
     frame() {
 
+        if (glz.isMobile()) {
+            //..
+        } else {
+            this.targetDesktopRuntime();
+        }
 
-
-        this.targetRuntime();
+        //this.targetRuntime();
         if (glz.key(glz._ESC)) window.localPlayer.target = undefined;
         switch (this.st) {
             case 0:
@@ -171,7 +183,86 @@ export class Target extends glz.GameObject {
                 break;
         }
     }
-    targetRuntime() {
+
+    targetMobileRuntime(event) {
+
+        for (let i = 0; i < glz.gameObjects.length; i++) {
+            let c = glz.gameObjects[i];
+            if (c.targeteable != undefined) {
+                let collision = false;
+
+                let pos = new glz.Vector2();
+                let ray = new glz.Raycaster();
+                pos.x = (event.x / glz.WIDTH) * 2 - 1;
+                pos.y = - (event.y / glz.HEIGHT) * 2 + 1;
+                ray.setFromCamera(pos, glz.camera);
+                let list = ray.intersectObjects(glz.scene.children, true);
+
+                for (let i = 0; i < list.length; i++) {
+                    if (c.model) {
+                        if (list[i].object.parent.id_ == c.id) {
+                            collision = true;
+                        }
+                    } else {
+                        if (list[i].object.id_ == c.id) {
+                            collision = true;
+                        }
+                    }
+                }
+
+                if (collision) {
+                    if (window.localPlayer == c.getTarget()) {
+                        window.localPlayer.target = undefined;
+                    } else {
+                        window.localPlayer.target = c.getTarget();
+                    }
+                }
+            }
+        }
+        // control de perdida del target..
+        if (window.localPlayer.target != undefined) {
+            if (glz.exists(window.localPlayer.target)) {
+                // si el target existe pero se vuelve intargeteable..
+                if (window.localPlayer.target.targeteable == false) window.localPlayer.target = undefined;
+            } else {
+                // si el target deja de existir..
+                window.localPlayer.target = undefined;
+            }
+        }
+    }
+    targetDesktopRuntime() {
+        if (glz.mouse.left) {
+            let found = false;
+            for (let i = 0; i < glz.gameObjects.length; i++) {
+                let c = glz.gameObjects[i];
+                if (c.targeteable != undefined) {
+                    let collision = false;
+                    if (glz.mouse.intersect(c)) collision = true;
+                    if (collision) {
+                        found = true;
+                        if (window.localPlayer == c.getTarget()) {
+                            window.localPlayer.target = undefined;
+                        } else {
+                            window.localPlayer.target = c.getTarget();
+                        }
+                    }
+                }
+            }
+            if (!found) window.localPlayer.target = undefined;
+        }
+        // control de perdida del target..
+        if (window.localPlayer.target != undefined) {
+            if (glz.exists(window.localPlayer.target)) {
+                // si el target existe pero se vuelve intargeteable..
+                if (window.localPlayer.target.targeteable == false) window.localPlayer.target = undefined;
+            } else {
+                // si el target deja de existir..
+                window.localPlayer.target = undefined;
+            }
+        }
+    }
+
+    targetRuntime_() {
         if (glz.isMobile()) {
             for (let i = 0; i < glz.gameObjects.length; i++) {
                 let c = glz.gameObjects[i];
@@ -187,7 +278,7 @@ export class Target extends glz.GameObject {
                     }
                 }
             }
-            //console.log(glz.mouse.left);
+
         } else {
             if (glz.mouse.left) {
                 let found = false;

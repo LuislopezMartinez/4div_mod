@@ -3,8 +3,52 @@ import * as vars from './globalVariables.js';
 window.idCam = undefined;
 window.localPlayer = undefined;
 //---------------------------------------------------------------------------------
+window.EVENT_touchscreen_start = function (event) {
+    if (window.localPlayer != undefined) {
+
+        let handleStart_a_ok = false;
+        let joyCam = window.localPlayer.idGame.idTouchControls.joyCam;
+        let xmin = joyCam.initx - joyCam.width / 2;
+        let xmax = joyCam.initx + joyCam.width / 2;
+        let ymin = joyCam.inity - joyCam.height / 2;
+        let ymax = joyCam.inity + joyCam.height / 2;
+        if (event.x > xmin && event.x < xmax && event.y > ymin && event.y < ymax) {
+            // evento touch iniciado encima de un joy.. no es posible targetear..
+        } else {
+            handleStart_a_ok = true;
+        }
+
+        let handleStart_b_ok = false;
+        let joyMov = window.localPlayer.idGame.idTouchControls.joyCam;
+        xmin = joyMov.initx - joyMov.width / 2;
+        xmax = joyMov.initx + joyMov.width / 2;
+        ymin = joyMov.inity - joyMov.height / 2;
+        ymax = joyMov.inity + joyMov.height / 2;
+        if (event.x > xmin && event.x < xmax && event.y > ymin && event.y < ymax) {
+            // evento touch iniciado encima de un joy.. no es posible targetear..
+        } else {
+            handleStart_b_ok = true;
+        }
+
+        // todo dispuesto ok para poder checkear si hay target o no..
+        if (handleStart_a_ok && handleStart_a_ok) {
+            // window.localPlayer.mobileValidTouchpoints.push(event);
+            let idTargetManager = window.localPlayer.idGame.idTargetManager;
+            idTargetManager.targetMobileRuntime(event);
+        }
+
+    }
+}
+window.EVENT_touchscreen_end = function (event) {
+    for (let i = 0; i < window.localPlayer.mobileValidTouchpoints.length; i++) {
+        if (window.localPlayer.mobileValidTouchpoints[i].id == event.id) {
+            window.localPlayer.mobileValidTouchpoints.splice(i, 1);
+        }
+    }
+}
+//---------------------------------------------------------------------------------
 export class NetClient extends glz.GameObject {
-    constructor(id, x, y, z, model) {
+    constructor(id, x, y, z, model, fnt) {
         super();
         this.st = 0;
         this.remoteId = id;
@@ -15,7 +59,7 @@ export class NetClient extends glz.GameObject {
         this.local = false;
         this.remoteAngle = 0;
         this.nick = "";
-        this.idTextNick = new glz.Write(null, 22, this.nick, glz.CENTER, this.x, this.y, glz.YELLOW, 1);
+        this.idTextNick = new glz.Write(fnt, 22, this.nick, glz.CENTER, this.x, this.y, glz.YELLOW, 1);
         this.idGame = undefined;
         glz.signal(this.idTextNick, glz.s_protected);
         this.left = false;
@@ -37,6 +81,10 @@ export class NetClient extends glz.GameObject {
         this.remoteControls = "0000";
 
         this.target = undefined;
+        this.mobileValidTouchpoints = [];
+
+        this.openChatDelay = 0;
+
     }
     initialize() {
         glz.signal(this, glz.s_protected);
@@ -85,6 +133,8 @@ export class NetClient extends glz.GameObject {
                     window.idCam.setCollision(true);
                     if (glz.isMobile()) {
                         window.idCam.setMouseControl(false);
+                        glz.mouse.setEventStart("EVENT_touchscreen_start");
+                        glz.mouse.setEventEnd("EVENT_touchscreen_end");
                     } else {
                         window.idCam.setMouseControl(true);
                         window.idCam.setMouseKey('right');
@@ -110,7 +160,7 @@ export class NetClient extends glz.GameObject {
             case 30:
 
                 if (this.local) {
-
+                    this.chatController();
                     this.controls();
                     this.moverLocal();
                     this.syncPlayer();
@@ -121,7 +171,13 @@ export class NetClient extends glz.GameObject {
                 break;
         }
     }
-
+    chatController() {
+        if (this.openChatDelay > 0) this.openChatDelay--;
+        if (glz.key(glz._ENTER)) {
+            this.idGame.idChat.openChatRemotely();
+            this.openChatDelay = 60;
+        }
+    }
     syncPlayer() {
         let dx = this.x - this.syncro_x;
         let dy = this.y - this.syncro_y;
@@ -246,14 +302,15 @@ export class NetClient extends glz.GameObject {
 
     RCVChatMessage(msg) {
         let mensaje = this.nick + ": " + msg[3].split(":")[1];
-        let c = new NetClient_SUB_chatMessage(mensaje);
+        let c = new NetClient_SUB_chatMessage(mensaje, this.idGame.idChat.fnt);
         c.father = this;
+        window.TTS.add(msg[3].split(":")[1], 1.2);
     }
 
 }
 //---------------------------------------------------------------------------------
 class NetClient_SUB_chatMessage extends glz.GameObject {
-    constructor(mensaje) {
+    constructor(mensaje, fnt) {
         super();
         this.st = 0;
         this.mensaje = mensaje;
@@ -261,10 +318,11 @@ class NetClient_SUB_chatMessage extends glz.GameObject {
         this.offset_y = 0;
         this.duracion = 0;
         this.delta_alpha = 0;
+        this.fnt = fnt;
     }
     initialize() {
         let trimmed_message = this.trimWhiteSpaces(this.mensaje);
-        this.idText = new glz.Write(null, 24, trimmed_message, glz.CENTER, this.x, this.y, glz.WHITE, 1);
+        this.idText = new glz.Write(this.fnt, 22, trimmed_message, glz.CENTER, this.x, this.y, glz.WHITE, 1);
         let palabras = this.mensaje.split(" ").length - 1;
         this.duracion = palabras * (100 / 60);    // 200 palabras por minuto lectura normald e una persona..
         this.duracion *= glz.getFps();
@@ -322,7 +380,7 @@ class NetClient_SUB_animator extends glz.GameObject {
         // establecer el nuevo modelo a este objeto..
         this.setModel(this.modelo);
         // aplicar skin..
-        this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/material.png");
+        this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/skins/criminalMaleA.png");
         this.clipSet(0);
         this.clipPlay();
     }
