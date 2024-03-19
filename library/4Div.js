@@ -183,6 +183,9 @@ let glz_initial_value_camera_position_x = 0;
 let glz_initial_value_camera_position_y = 0;
 let glz_initial_value_camera_position_z = 0;
 
+export const TYPE_CUBEMAP = 15;
+export const TYPE_PANORAMA = 16;
+
 //----------------------------------------------------------------------------------
 export function millis() {
     return performance.now();
@@ -3098,6 +3101,7 @@ export class LoadImages extends GameObject {
     }
 }
 //----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 export class LoadSounds extends GameObject {
     constructor(path, num) {
         super();
@@ -3190,6 +3194,7 @@ export function setTexture(mesh, texture) {
 export function loadTexture(img_path) {
     return new THREE.TextureLoader().load(img_path);
 }
+
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
@@ -4189,64 +4194,10 @@ export function mixamoMerger(models) {
     return mesh;
 }
 //---------------------------------------------------------------------------------
-export function loadModelFBX_(filename, container) {
-    const fbxLoader = new FBXLoader()
-    fbxLoader.load(
-        filename,
-        (object) => {
-            // object.traverse(function (child) {
-            //     if ((child as THREE.Mesh).isMesh) {
-            //         // (child as THREE.Mesh).material = material
-            //         if ((child as THREE.Mesh).material) {
-            //             ((child as THREE.Mesh).material as THREE.MeshBasicMaterial).transparent = false
-            //         }
-            //     }
-            // })
-            // object.scale.set(.01, .01, .01)
-            //scene.add(object)
-            container.push(object);
-            load_model_security_flag = true;
-        },
-        (xhr) => {
-            console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
-        },
-        (error) => {
-            console.log(error)
-        }
-    )
-}
-//---------------------------------------------------------------------------------
-export function loadModelOBJ_(filename, container) {
-    var obj = filename;
-    var mtl = filename.substring(0, filename.length - 4) + ".mtl";
-    //console.info(obj, mtl);
-    load_model_security_flag = false;
-    var mtlLoader = new MTLLoader();
-    mtlLoader.load(mtl, function (materials) {
-        materials.preload();
-        var objLoader = new OBJLoader();
-        objLoader.setMaterials(materials);
-        objLoader.load(obj, function (object) {
-            /*
-            object.traverse( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                }   
-            } );    
-            */
-            //mod.push(object);    
-            container.push(object);
-            load_model_security_flag = true;
-        });
-    });
-}
 //---------------------------------------------------------------------------------
 function loadModelOBJ(filename, container, pos) {
     var obj = filename;
     var mtl = filename.substring(0, filename.length - 4) + ".mtl";
-    //console.info(obj, mtl);
-    load_model_security_flag = false;
     var mtlLoader = new MTLLoader();
     mtlLoader.load(mtl, function (materials) {
         materials.preload();
@@ -4314,43 +4265,50 @@ export class LoadModels extends GameObject {
     }
 }
 //---------------------------------------------------------------------------------
-var load_model_security_flag = true;
-function isSecureToLoadModel() {
-    return load_model_security_flag;
+function loadTextureDefault(filename, container, pos) {
+
+    const loader = new THREE.TextureLoader();
+    loader.load(
+        // resource URL
+        filename,
+
+        // onLoad callback
+        function (texture) {
+            // in this example we create the material when the texture is loaded
+            container[pos] = texture;
+        },
+
+        // onProgress callback currently not supported
+        undefined,
+
+        // onError callback
+        function (err) {
+            console.error('An error happened when texture loading..');
+        }
+    );
 }
-//---------------------------------------------------------------------------------
-export class LoadModels_ extends GameObject {
-    constructor(model_list) {
+//-------
+export class LoadTextures extends GameObject {
+    constructor(texture_list) {
         super();
         this.st = 0;
         this.pos = 0;
         this.ready = false;
-        this.model_list = model_list;
+        this.texture_list = texture_list;
         this.dat = [];
     }
     frame() {
         switch (this.st) {
             case 0:
-                if (isSecureToLoadModel()) {              // si es seguro cargar un nuevo modelo..
-                    if (this.pos < this.model_list.length) {   // si quedan modelos por cargar..
-                        this.st = 10;                   // salta al cargador..
-                    } else {
-                        this.ready = true;   // si no quedan modelos por cargar termina..
-                        //signal(this, s_kill);           // fin..
-                        //console.log('Loading Complete!');
-                        this.st = 30;
-                    }
+                for (let i = 0; i < this.texture_list.length; i++) {
+                    loadTextureDefault(this.texture_list[i], this.dat, i);
                 }
+                this.st = 10;
                 break;
             case 10:
-                var extension = this.model_list[this.pos].substring(this.model_list[this.pos].length - 3, this.model_list[this.pos].length);
-                if (extension == "obj") {
-                    loadModelOBJ(this.model_list[this.pos], this.dat);
-                } else if (extension == "fbx") {
-                    loadModelFBX(this.model_list[this.pos], this.dat);
+                if (this.dat.length == this.texture_list.length) {
+                    this.ready = true;
                 }
-                this.pos++;                             // iterar una posicion en la lista de modelos..
-                this.st = 0;                            // volver al estado inicial..
                 break;
         }
     }
@@ -5889,28 +5847,57 @@ export function getCaller() {
     return _id_;
 }
 //---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
 export class SkyBox extends GameObject {
-    constructor(path) {
+    constructor(skybox_type, param) {
+        // param puede ser un path para el tipo cubemap o una textura para el tipo panorama..
         super();
-        this.path = path;
+        this.skybox_type = skybox_type;
+        this.param = param;
+        this.fixedToCamera = true;
     }
     initialize() {
-        this.material = [];
-        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'right.png'), side: 1 }));
-        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'left.png'), side: 1 }));
-        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'up.png'), side: 1 }));
-        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'down.png'), side: 1 }));
-        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'front.png'), side: 1 }));
-        this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.path + 'back.png'), side: 1 }));
-        var skyboxGeom = new THREE.BoxGeometry(1, 1, 1);
-        this.mesh = new THREE.Mesh(skyboxGeom, this.material);
-        this.mesh.flipSided = true;
-        scene.add(this.mesh);
+        switch (this.skybox_type) {
+            case TYPE_CUBEMAP:
+                this.material = [];
+                this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.param + 'right.png'), side: 1 }));
+                this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.param + 'left.png'), side: 1 }));
+                this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.param + 'up.png'), side: 1 }));
+                this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.param + 'down.png'), side: 1 }));
+                this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.param + 'front.png'), side: 1 }));
+                this.material.push(new THREE.MeshBasicMaterial({ map: loadTexture(this.param + 'back.png'), side: 1 }));
+                var skyboxGeom = new THREE.BoxGeometry(1, 1, 1);
+                this.mesh = new THREE.Mesh(skyboxGeom, this.material);
+                this.mesh.flipSided = true;
+                scene.add(this.mesh);
+                break;
+            case TYPE_PANORAMA:
+                let skyGeo = new THREE.SphereGeometry(1, 25, 25);
+                let texture = undefined;
+                let tex = this.param;
+                if (tex instanceof THREE.Texture) {
+                    texture = tex;
+                } else if (tex instanceof PIXI.Texture) {
+                    texture = new THREE.TextureLoader().load(tex.textureCacheIds[0]);  // uso normbre de archivo guardado en textura de pixi..
+                } else {
+                    texture = new THREE.TextureLoader().load(tex); // uso nombre de archivo directamente..
+                }
+                this.material = new THREE.MeshPhongMaterial({
+                    map: texture,
+                    side: THREE.BackSide
+                });
+                this.mesh = new THREE.Mesh(skyGeo, this.material);
+                scene.add(this.mesh);
+                break;
+            default:
+                console.log("SkyBox INFO: available modes: TYPE_CUBEMAP | TYPE_PANORAMA");
+                break;
+        }
     }
+    finalize() { }
     setSize(size) {
         this.size = size;
     }
-    finalize() { }
     frame() {
         this.x = camera.position.x;
         this.y = camera.position.z;

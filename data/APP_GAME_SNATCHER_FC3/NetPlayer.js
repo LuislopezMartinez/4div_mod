@@ -48,7 +48,7 @@ window.EVENT_touchscreen_end = function (event) {
 }
 //---------------------------------------------------------------------------------
 export class NetClient extends glz.GameObject {
-    constructor(id, x, y, z, model, fnt) {
+    constructor(id, x, y, z, model, fnt, tex) {
         super();
         this.st = 0;
         this.remoteId = id;
@@ -77,14 +77,13 @@ export class NetClient extends glz.GameObject {
         this.syncro_a = 0;
         this.moved = false;
         this.subAnimatorModel = undefined;
-
         this.remoteControls = "0000";
-
         this.target = undefined;
         this.mobileValidTouchpoints = [];
-
         this.openChatDelay = 0;
 
+        this.tex = tex;     // texturas cargadas al inicio del juego..
+        this.skin = 0;
     }
     initialize() {
         glz.signal(this, glz.s_protected);
@@ -98,6 +97,9 @@ export class NetClient extends glz.GameObject {
             }
         }
         glz.signal(this.idJoy, glz.s_kill);
+    }
+    setSkin(skinNumber) {
+        this.skin = skinNumber;
     }
     setLocalPlayer(value) {
         this.local = value;
@@ -292,12 +294,14 @@ export class NetClient extends glz.GameObject {
         let z = msg[4].split(":")[1];
         let angle = msg[5].split(":")[1];
         let remoteControls = msg[6].split(":")[1];
+        let skin = msg[7].split(":")[1];
 
         this.RCVoffset.x = x;
         this.RCVoffset.y = y;
         this.RCVoffset.z = z;
         this.remoteAngle = angle;
         this.remoteControls = remoteControls;
+        this.setSkin(glz.int(skin));
     }
 
     RCVChatMessage(msg) {
@@ -365,9 +369,14 @@ class NetClient_SUB_animator extends glz.GameObject {
         this.z = this.father.z;
         glz.signal(this, glz.s_protected);
         this.modelo;
+        this.skin = 0;
 
         this.targeteable = true;
 
+    }
+    setSkin(skinNumber) {
+        this.skin = skinNumber;
+        this.setTexture(this.father.tex[this.skin]);
     }
     getTarget() {
         return this.father;
@@ -380,7 +389,7 @@ class NetClient_SUB_animator extends glz.GameObject {
         // establecer el nuevo modelo a este objeto..
         this.setModel(this.modelo);
         // aplicar skin..
-        this.setTexture("data/APP_GAME_SNATCHER_FC3/models/perso/skins/survivorFemaleA.png");
+        //this.setTexture(this.father.tex[this.skin]);
         this.clipSet(0);
         this.clipPlay();
     }
@@ -395,7 +404,9 @@ class NetClient_SUB_animator extends glz.GameObject {
             glz.signal(this, glz.s_kill);
         } else {
 
-            //..
+            if (this.skin != this.father.skin) {
+                this.setSkin(this.father.skin);
+            }
 
         }
         switch (this.st) {

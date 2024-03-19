@@ -19,7 +19,8 @@ var loader = [];    // array de loaders para la carga de diferentes tipos de rec
 let img = [];       // array de imagenes para pixi..
 let snd = [];       // array de sonidos para waud..
 let mod = [];       // array de modelos 3d..
-let fnt = [];
+let fnt = [];       // array de fuentes de texto..
+let tex = [];       // array de texturas..
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
@@ -67,6 +68,19 @@ window.main = function () {
                 lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk_side_1.fbx");
                 lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk_side_2.fbx");
                 loader[3] = new LoadModels(lista);
+
+                let listo = [];
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/male/criminalMaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/male/humanMaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/male/skaterMaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/male/survivorMaleB.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/male/zombieMaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/cyborgFemaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/humanFemaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/skaterFemaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/survivorFemaleA.png");
+                listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/zombieFemaleA.png");
+                loader[4] = new glz.LoadTextures(listo);
                 ST = 20;
             }
             break;
@@ -82,6 +96,7 @@ window.main = function () {
                 snd = loader[1].get();
                 fnt = loader[2].get();
                 mod = loader[3].get();
+                tex = loader[4].get();
                 fadeOff(500);
                 ST = 30;
             }
@@ -102,6 +117,12 @@ window.main = function () {
     }
 }
 //---------------------------------------------------------------------------------
+window.event_game_pantallaTitulo_botonLeft = function () {
+    idGame.onClick_pantallaTitulo_botonLeft();
+}
+window.event_game_pantallaTitulo_botonRight = function () {
+    idGame.onClick_pantallaTitulo_botonRight();
+}
 window.event_game_empezarDeNuevo = function () {
     idGame.onClick_empezarDeNuevo();
 }
@@ -134,6 +155,9 @@ class Game extends GameObject {
         this.idTouchControls = undefined;
         this.idTargetManager = undefined;
         this.idChat = undefined;
+        this.sky = undefined;
+        this.idPersoPantallaTitulo = undefined;
+        this.skinNumber = undefined;
     }
     initialize() {
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
@@ -173,18 +197,36 @@ class Game extends GameObject {
                     letMeAlone();
                     soundPlay(snd[1]);
                     new es0.Suelo(dataPath + "images/textures/Scifi_Hex_Wall_Albedo.jpg", dataPath + "images/textures/Scifi_Hex_Wall_normal.jpg");
-                    this.sky = new glz.SkyBox(dataPath + "images/textures/skybox_red/");
-                    this.sky.size = 300;
+
+                    this.idPersoPantallaTitulo = new es0.Personaje(mod, tex, idGame);
+
+
+                    this.sky = new glz.SkyBox(glz.TYPE_PANORAMA, img[2]);
+                    //this.sky = new glz.SkyBox(glz.TYPE_CUBEMAP, dataPath + "images/textures/skybox_red/");
+                    this.sky.size = 150;
                     this.sky['frame'] = function () { this.anglex += 0.1; };
+
                     for (let i = 0; i < 30; i++) {
                         //new es0.Humo(img[3]);
                     }
 
                     if (!data.contains("date")) {
-                        this.botonEmpezar = new EGUIbutton(fnt[0], 32, "EMPEZAR PARTIDA", WIDTH / 2, 480, WHITE);
+                        this.botonEmpezar = new EGUIbutton(fnt[0], 32, "EMPEZAR PARTIDA", WIDTH / 2, 580, WHITE);
                         this.botonEmpezar.setArea(400, 80);
                         this.botonEmpezar.setEvent("event_game_empezarPartida");
+
+                        this.botonLeft = new EGUIgbutton(img[4], WIDTH / 2 - 200, 400, 1);
+                        this.botonLeft.setEvent("event_game_pantallaTitulo_botonLeft");
+
+                        this.botonRight = new EGUIgbutton(img[4], WIDTH / 2 + 200, 400, 1);
+                        this.botonRight.mirrorx = true;
+                        this.botonRight.setEvent("event_game_pantallaTitulo_botonRight");
+
+
+
                     } else {
+                        this.idPersoPantallaTitulo.setSkin(data.get("skin"));
+
                         this.botonBorrar = new EGUIbutton(null, 32, "EMPEZAR DE NUEVO", WIDTH / 2, 500 - 60, WHITE);
                         this.botonBorrar.setArea(400, 80);
                         this.botonBorrar.setColor(RED);
@@ -237,7 +279,7 @@ class Game extends GameObject {
                 soundPlay(snd[3]);
                 //fadeOff(500);
                 signal(this.botonEmpezar, s_kill);
-                this.inNick = new EGUIinputBox(fnt[0], 32, "Tu Nombre: ", "", WIDTH / 2, 480, 200);
+                this.inNick = new EGUIinputBox(fnt[0], 32, "Tu Nombre: ", "", WIDTH / 2, 580, 200);
                 this.inNick.setLabelColor(WHITE);
                 this.inNick.setAutoClear(true);
                 this.inNick.setFocus(true);
@@ -258,7 +300,7 @@ class Game extends GameObject {
                 if (this.inNick.get() != "") {
                     signal(this.botonConectar, s_kill);
                     soundPlay(snd[4]);
-                    this.botonConectar = new EGUIbutton(fnt[0], 32, "CONECTAR", WIDTH / 2 + 210, 480, WHITE);
+                    this.botonConectar = new EGUIbutton(fnt[0], 32, "CONECTAR", WIDTH / 2 + 210, 580, WHITE);
                     this.botonConectar.setEvent("event_game_botonConectar");
                 } else {
                     //..
@@ -296,6 +338,7 @@ class Game extends GameObject {
                 if (!data.contains("date")) {
                     data.set("date", new Date());
                     data.set("nick", this.inNick.get());
+                    data.set("skin", this.skinNumber);
                 }
                 signal(this.inNick, s_kill);
                 signal(this.botonConectar, s_kill);
@@ -339,12 +382,22 @@ class Game extends GameObject {
 
             case 2000:
                 this.checkConnectionStatus();
+                if (this.sky != undefined) {
+                    this.sky.anglex += 0.1;
+                }
                 break;
 
         }
     }
+    onClick_pantallaTitulo_botonLeft() {
+        this.idPersoPantallaTitulo.anterior();
+    }
+    onClick_pantallaTitulo_botonRight() {
+        this.idPersoPantallaTitulo.siguiente();
+    }
+
     createWorld() {
-        setAmbientLight(WHITE, 0.2);
+        setAmbientLight(WHITE, 0.4);
         let luz = new glz.SpotLight(WHITE, 10000);
         luz.y = 40;
         this.idChat = new es1.Chat(img[7], fnt[0]);
@@ -352,13 +405,15 @@ class Game extends GameObject {
         setGravity(0, -90);
         if (glz.isMobile()) this.idTouchControls = new es1.TouchControls();
         this.idTargetManager = new es1.Target(img, fnt);
-        let sky = new glz.SkyBox(dataPath + "images/textures/skybox_red/");
-        sky.size = 500;
+        this.sky = new glz.SkyBox(glz.TYPE_CUBEMAP, dataPath + "images/textures/skybox_red/");
+        this.sky.size = 500;
     }
+
     netSendNick() {
         let m = new glz.NetMessage();
         m.add("netSendNick");
         m.add(data.get("nick"));
+        m.add(data.get("skin"));
         m.send();
     }
     checkConnectionStatus() {
@@ -407,6 +462,7 @@ window.onNetEvent = function (msg) {
             let z = 0;
             let localPlayer = false;
             let nick = "entidad desconocida";
+            let skin = 0;
             for (let i = 1; i < msg.length; i++) {
                 let params = msg[i].split(":");
                 switch (params[0]) {
@@ -428,9 +484,12 @@ window.onNetEvent = function (msg) {
                     case "nick":
                         nick = params[1];
                         break;
+                    case "skin":
+                        skin = int(params[1]);
+                        break;
                 }
             }
-            let c = new net.NetClient(id, x, y, z, mod, fnt[0]);    // creo proceso player en red con su ID en el servidor y el nick..
+            let c = new net.NetClient(id, x, y, z, mod, fnt[0], tex);    // creo proceso player en red con su ID en el servidor y el nick..
             if (localPlayer == true) {
                 c.setLocalPlayer(true);
             } else {
@@ -438,6 +497,7 @@ window.onNetEvent = function (msg) {
             }
             c.set_IDGAME_pointer(idGame);
             c.setNick(nick);
+
             break;
 
         case "playerArround_leave":

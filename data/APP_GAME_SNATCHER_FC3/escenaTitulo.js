@@ -1,5 +1,75 @@
 import * as glz from '../../library/4Div.js';
 //---------------------------------------------------------------------------------
+export class Personaje extends glz.GameObject {
+    constructor(modelos, skins, idGame) {
+        super();
+        this.st = 0;
+        this.modelos = modelos;
+        this.skins = skins;
+        this.pos = 0;
+        this.initx = 0;
+        this.initAngle = 0;
+        this.idGame = idGame;
+    }
+    setSkin(num) {
+        this.pos = num;
+        this.setTexture(this.skins[this.pos]);
+        this.idGame.skinNumber = this.pos;
+    }
+    anterior() {
+        if (this.pos > 0) {
+            this.pos--;
+            this.setTexture(this.skins[this.pos]);
+            this.idGame.skinNumber = this.pos;
+        }
+    }
+    siguiente() {
+        if (this.pos < this.skins.length - 1) {
+            this.pos++;
+            this.setTexture(this.skins[this.pos]);
+            this.idGame.skinNumber = this.pos;
+        }
+    }
+    initialize() {
+        let luz = new glz.SpotLight(glz.WHITE, 10000);
+        luz.y = 40;
+        luz.z = -20;
+        this.angley = 180;
+        this.z = -25;
+        this.size = .05;
+        let modelo = glz.mixamoMerger(this.modelos);
+        this.setModel(modelo);
+        // aplicar skin..
+        this.setTexture(this.skins[this.pos]);
+        this.clipSet(0);
+        this.clipPlay();
+    }
+    finalize() {
+
+    }
+    frame() {
+        switch (this.st) {
+            case 0:
+                let colision = glz.mouse.intersect(this);
+                if (colision) {
+                    if (glz.mouse.touch) {
+                        this.initx = glz.mouse.x;
+                        this.initAngle = this.angley;
+                        this.st = 10;
+                    }
+                } else {
+                    //..
+                }
+                break;
+            case 10:
+                this.angley = this.initAngle - (this.initx - glz.mouse.x);
+                if (!glz.mouse.touch) {
+                    this.st = 0;
+                }
+                break;
+        }
+    }
+}
 //---------------------------------------------------------------------------------
 export class Marco extends glz.GameObject {
     constructor(x, y, col, gr) {
@@ -30,7 +100,7 @@ export class Logo extends glz.GameObject {
     }
     initialize() {
         this.x = glz.WIDTH / 2;
-        this.y = 250;
+        this.y = 150;
         this.size = 0.8;
         this.setGraph(this.grx);
 
@@ -89,11 +159,9 @@ export class Suelo extends glz.GameObject {
         this.createMaterial(glz.TEXTURED, this.textura, true, 10);
         this.setNormalMaterial(this.textura_normal);
         this.createPlane(200, 200);
-        //this.createBody(glz.TYPE_PLANE);
-        //this.setStatic(true);
     }
     frame() {
-        this.angle += 0.025;
+        //this.angle += 0.025;
 
     }
 }

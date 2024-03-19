@@ -6,6 +6,7 @@ class ClientController extends sprite {
     ArrayList <ClientController> playersArround = new ArrayList <ClientController>();
     boolean moved = false;
     String nick = "";
+    String skin = "";
     PImage gr;
     String controls = "";
     public ClientController( WebSocket sock ) {
@@ -56,6 +57,7 @@ class ClientController extends sprite {
         case "netSendNick":
             // el cliente quiere setear su nick..
             this.nick = msg.get(1);
+            this.skin = msg.get(2);
             break;
 
             /*
@@ -124,6 +126,7 @@ class ClientController extends sprite {
                             m.add("localPlayer:"+false);
                         }
                         m.add("nick:"+this.nick);
+                        m.add("skin:"+this.skin);
                         m.send();
                     }
                 }
@@ -143,6 +146,7 @@ class ClientController extends sprite {
             m.add("z:"+int(this.z));
             m.add("a:"+int(this.angle));
             m.add("controls:" + this.controls);
+            m.add("skin:" + this.skin);
             m.send();
         }
     }
