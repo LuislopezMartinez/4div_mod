@@ -224,6 +224,7 @@ class GameObject()
     .getDistance2d( a,b c,d );          - Mide la distancia 2d entre dos puntos XY.
     .getDistance( a, b );               - Mide la distancia entre dos procesos.
     .getAngle( a, b );                  - Mide el angulo entre dos procesos.
+    .onScreen();                        - Retorna TRUE|FALSE si el grafico o modelo 3d estan en el campo de vision de la camara.
 
 class JoyStick( x, y, width, height )
     - Esta clase es un joy on screen diseñado para ofrecer una forma simple y rapida de control tactil analogico y digital.

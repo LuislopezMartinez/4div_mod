@@ -21,6 +21,7 @@ let snd = [];       // array de sonidos para waud..
 let mod = [];       // array de modelos 3d..
 let fnt = [];       // array de fuentes de texto..
 let tex = [];       // array de texturas..
+let obj = [];
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
@@ -80,6 +81,12 @@ window.main = function () {
                 listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/survivorFemaleA.png");
                 listo.push("data/APP_GAME_SNATCHER_FC3/models/perso/skins/female/zombieFemaleA.png");
                 loader[4] = new glz.LoadTextures(listo);
+
+                let objlist = [];
+                objlist.push("data/APP_GAME_SNATCHER_FC3/models/objects/rockA.obj");
+                objlist.push("data/APP_GAME_SNATCHER_FC3/models/objects/rockB.obj");
+                objlist.push("data/APP_GAME_SNATCHER_FC3/models/objects/rockC.obj");
+                loader[5] = new glz.LoadModels(objlist);
                 ST = 20;
             }
             break;
@@ -96,6 +103,7 @@ window.main = function () {
                 fnt = loader[2].get();
                 mod = loader[3].get();
                 tex = loader[4].get();
+                obj = loader[5].get();
                 fadeOff(500);
                 ST = 30;
             }
@@ -404,6 +412,9 @@ class Game extends GameObject {
         this.sky = new glz.SkyBox(glz.TYPE_PANORAMA, img[2]);
         this.sky.size = 250;
         this.inventario = new es1.Inventario(img, fnt);
+
+        new es1.Roca(img);
+
     }
 
     netSendNick() {

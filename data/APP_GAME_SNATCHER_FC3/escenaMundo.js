@@ -220,6 +220,26 @@ export class Suelo extends glz.GameObject {
     }
 }
 //---------------------------------------------------------------------------------
+export class Roca extends glz.GameObject {
+    constructor(obj) {
+        super();
+        this.st = 0;
+        this.obj = obj;
+    }
+    initialize() {
+        this.setModel(this.obj);
+    }
+    finalize() { }
+    frame() {
+        switch (this.st) {
+            case 0:
+                break;
+            case 10:
+                break;
+        }
+    }
+}
+//---------------------------------------------------------------------------------
 export class TouchControls extends glz.GameObject {
     constructor(img) {
         super();

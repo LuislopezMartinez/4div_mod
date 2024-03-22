@@ -811,6 +811,25 @@ export class GameObject {
         console.log("TO DO");
     }
     //------------------------------------------------------------
+    onScreen() {
+        if (this.graph != undefined) {
+            if (this.x > 0 && this.x < WIDTH && this.y > 0 && this.y < HEIGHT) {
+                return true;
+            }
+        }
+        if (this.mesh != undefined) {
+            const frustum = new THREE.Frustum();
+            const matrix = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+            frustum.setFromProjectionMatrix(matrix);
+            if (!frustum.containsPoint(this.mesh.position)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+    //------------------------------------------------------------
     worldToScreen(pos = undefined) {
         var position = new THREE.Vector3();
         if (pos == undefined) {

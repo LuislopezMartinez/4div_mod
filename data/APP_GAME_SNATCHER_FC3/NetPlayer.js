@@ -59,9 +59,10 @@ export class NetClient extends glz.GameObject {
         this.local = false;
         this.remoteAngle = 0;
         this.nick = "";
-        this.idTextNick = new glz.Write(fnt, 22, this.nick, glz.CENTER, this.x, this.y, glz.YELLOW, 1);
+        //this.idTextNick = new glz.Write(fnt, 22, this.nick, glz.CENTER, this.x, this.y, glz.YELLOW, 1);
+        this.idTextNick = undefined;
         this.idGame = undefined;
-        glz.signal(this.idTextNick, glz.s_protected);
+        //glz.signal(this.idTextNick, glz.s_protected);
         this.left = false;
         this.right = false;
         this.up = false;
@@ -86,6 +87,8 @@ export class NetClient extends glz.GameObject {
         this.skin = skin;
     }
     initialize() {
+        this.idTextNick = new glz.Write(this.fnt, 22, this.nick, glz.CENTER, this.x, this.y, glz.YELLOW, 1);
+        glz.signal(this.idTextNick, glz.s_protected);
         glz.signal(this, glz.s_protected);
     }
     finalize() {
