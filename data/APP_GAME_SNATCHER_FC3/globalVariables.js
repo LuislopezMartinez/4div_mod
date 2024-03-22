@@ -28,3 +28,54 @@ this.dialog.add("Ipsum, y más recientemente con software de autoedición,");
 this.dialog.add("como por ejemplo Aldus PageMaker, el cual incluye versiones");
 this.dialog.add("de Lorem Ipsum.");
 */
+
+export class Properties {
+    constructor(tipo_entidad = "entidad desconocida") {
+        this._type = tipo_entidad;
+        this._name = "...";
+        this._level = 1;
+        this._levelBaseValue = 10;
+        this._stamina = 1;
+        this._strength = 1;
+        this._agility = 1;
+        this._intellect = 1;
+        this._defense = 1;
+
+        this._stamina_actual = 1;
+        this._strength_actual = 1;
+        this._agility_actual = 1;
+        this._intellect_actual = 1;
+        this._defense_actual = 1;
+
+    }
+    // SETTERS..
+    set level(value) {
+        this._level = value;
+        // CALCULO LOS VALORES MAXIMOS PARA ESTE NIVEL..
+        this._stamina = 50 + (this._levelBaseValue * this._level);
+        this._strength = this._levelBaseValue * this._level;
+        this._agility = this._levelBaseValue * this._level;
+        this._intellect = this._levelBaseValue * this._level;
+        this._defense = this._levelBaseValue * this._level;
+        // APLICO LOS VALORES A LAS PROPIEDADES DINAMICAS..
+        this._stamina_actual = this._stamina;
+        this._strength_actual = this._strength;
+        this._agility_actual = this._agility;
+        this._intellect_actual = this._intellect;
+        this._defense_actual = this._defense;
+
+    }
+    // GETTERS..
+    get level() { return this._level; }
+    get stamina() { return this._stamina_actual; }
+    get strength() { return this._strength_actual; }
+    get agility() { return this._agility_actual; }
+    get intellect() { return this._intellect_actual; }
+    get defense() { return this._defense_actual; }
+    heal(value) {
+
+    }
+    damage(value) {
+
+    }
+}

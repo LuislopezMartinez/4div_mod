@@ -284,6 +284,9 @@ export function parseBoolean(value) {
 export function parseFloat(value) {
     return window.parseFloat(value);
 }
+export function parseInt(value) {
+    return window.parseInt(value);
+}
 //-------
 export function setGravity(x = 0, y = 0, z = 0) {
     if (world == undefined) {
@@ -1525,6 +1528,7 @@ export class GameObject {
     clearGraph() {
         if (this.graph !== undefined) {
             app.stage.removeChild(this.graph);
+            this.graph = undefined;
         }
         this.newgraph_created = false;
         this._w = 0;
@@ -2247,7 +2251,7 @@ export class Write extends GameObject {
         } else {
             this.idText.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
         }
-
+        this._align();
         app.stage.addChild(this.idText);
     }
     setFnt(fnt) {
@@ -2258,18 +2262,7 @@ export class Write extends GameObject {
             // ..
         }
     }
-    frame() {
-        this.idText.x = this.x;
-        this.idText.y = this.y;
-        this.idText.zIndex = this.z;
-        this.idText.alpha = this.alpha;
-        this.idText.text = this.text;
-        this.textSize = this.textSizePoints + 'px';
-        this.idText.anchor.x = this._cx;
-        this.idText.anchor.y = this._cy;
-        this.idText.rotation = -radians(this.angle);
-        this.idText.visible = this.visible;
-
+    _align() {
         if (this.style === undefined) {
             this.idText.style.fill = this.color;
             this.idText.style.fontSize = this.textSize;
@@ -2290,6 +2283,20 @@ export class Write extends GameObject {
                     break;
             }
         }
+    }
+    frame() {
+        this.idText.x = this.x;
+        this.idText.y = this.y;
+        this.idText.zIndex = this.z;
+        this.idText.alpha = this.alpha;
+        this.idText.text = this.text;
+        this.textSize = this.textSizePoints + 'px';
+        this.idText.anchor.x = this._cx;
+        this.idText.anchor.y = this._cy;
+        this.idText.rotation = -radians(this.angle);
+        this.idText.visible = this.visible;
+
+        this._align();
 
 
         if (this.sizex === 1 && this.sizey === 1) {
@@ -2999,6 +3006,12 @@ export function signal(id, sig) {
         case s_kill:
             if (!id.killProtection) {
                 id.live = false;
+                if (id.graph != undefined) {
+                    id.graph.visible = false;
+                }
+                if (id.mesh != undefined) {
+                    id.mesh.visible = false;
+                }
             }
             break;
         case s_protected:
@@ -5496,6 +5509,13 @@ export class Storage {
             return false;
         }
     }
+    setObject(ket, object) {
+        localStorage.setItem("myObject", JSON.stringify(object));
+    }
+    getObject(key) {
+        let obj = localStorage.getItem(key);
+        return JSON.parse(obj);
+    }
 }
 //---------------------------------------------------------------------------------
 function glz_wakeLock() {
@@ -5601,7 +5621,7 @@ export class Cam extends GameObject {
     }
 
     frame() {
-        if (this.mouseControl) {
+        if (this.mouseControl && !lockUi) {
             if (mouse[this.mouseKey]) {
                 if (!this.isLocked) {
                     this.isLocked = true;

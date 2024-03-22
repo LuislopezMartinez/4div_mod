@@ -158,7 +158,7 @@ class ClientController extends sprite {
             m.add("netSendChatMessage");
             m.add("id:"+this.id);
             m.add(msg.get(1));
-            m.add("msg:"+msg.get(2));
+            m.add(msg.get(2));
             m.send();
         }
     }

@@ -1,7 +1,93 @@
 import * as glz from '../../library/4Div.js';
 import { NetClient } from './NetPlayer.js';
 import * as vars from './globalVariables.js';
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+window.event_inventario_buttonBag = function () {
+    glz.getCaller().father.onClick_botonBag();
 
+}
+//---------------------------------------------------------------------------------
+export class Inventario extends glz.GameObject {
+    constructor(img, fnt) {
+        super();
+        this.st = 0;
+        this.buttonBag = undefined;
+        this.img = img;
+        this.fnt = fnt;
+        this.show = false;
+        this.celda = 0;
+        this.temp = [];
+    }
+    initialize() {
+        this.x = glz.WIDTH - (this.img[8].width / 2 + 20);
+        this.y = glz.HEIGHT / 2;
+        this.buttonBag = new glz.EGUIgbutton(this.img[9], glz.WIDTH - 35, 35);
+        this.buttonBag.setEvent("event_inventario_buttonBag");
+
+    }
+    finalize() {
+
+    }
+    frame() {
+
+        switch (this.st) {
+            case 0:
+                break;
+            case 10:
+                break;
+
+            case 100:
+                if (!this.show) {
+                    this.show = !this.show;
+                    this.openBag();
+                } else {
+                    this.show = !this.show;
+                    this.closeBag();
+                }
+                this.st = 0;
+                break;
+        }
+    }
+    openBag() {
+        // 5,29 - 77
+        this.visible = false;
+        this.setGraph(this.img[8]);
+        this.visible = true;
+        let t = new glz.Write(this.fnt[0], 14, " Inventario estupendo!", glz.RIGHT, this.x - this.img[8].width / 2, this.y - this.img[8].height / 2 + 14, glz.YELLOW, 1);
+        this.temp.push(t);
+        for (let j = 0; j < 6; j++) {
+            for (let i = 0; i < 4; i++) {
+                let vec = this.getRealPoint(5 + 77 / 2, 29 + 77 / 2);
+                vec.x += i * 78;
+                vec.y += j * 78;
+                let num = 4 * j + i;
+
+                let t = new glz.EGUIgbutton([this.img[10], this.img[11]], vec.x - 1, vec.y - 1, 1);
+                this.temp.push(t);
+                let z_ = t.z + 1;
+                t = new glz.Write(this.fnt[0], 12, num, glz.RIGHT, vec.x - 32, vec.y - 25, glz.GRAY, 1);
+                t.z = z_;
+                this.temp.push(t);
+            }
+        }
+
+
+
+    }
+    closeBag() {
+        this.visible = false;
+        this.clearGraph();
+        this.visible = true;
+        for (let i = 0; i < this.temp.length; i++) {
+            glz.signal(this.temp[i], glz.s_kill);
+        }
+        this.temp = [];
+    }
+    onClick_botonBag() {
+        this.st = 100;
+    }
+}
 //---------------------------------------------------------------------------------
 window.event_chat_buttonChat = function () {
     glz.getCaller().father.onClick_botonChat();
@@ -54,19 +140,58 @@ export class Chat extends glz.GameObject {
 
             case 200:
                 let str = this.in.get();
-                if (str.length > 0) {
-                    let m = new glz.NetMessage();
-                    m.add("netSendChatMessage");
-                    m.add("channel:general");
-                    m.add(this.in.get());
-                    m.send();
-                }
+
+                let params = str.split(" ");
+                if (params)
+
+
+                    if (str.length > 0) {
+
+                        if (str[0] == '/') {
+                            // comando detectado..
+                            let param = str.split(" ");
+                            switch (param[0]) {
+                                case "/dados":
+                                case "/rol":
+                                    if (param.length == 1) {
+                                        let msg = "Tirada de dados [0-100]: " + glz.randInt(100);
+                                        this.netSendChatMessage(msg);
+                                    } else {
+                                        if (glz.isNumber(glz.parseInt(param[1]))) {
+                                            let msg = "Tirada de dados [0-" + param[1] + "]: " + glz.randInt(param[1]);
+                                            this.netSendChatMessage(msg);
+                                        } else {
+                                            console.log("CHAT: [" + param[1] + "] No es un número!");
+                                        }
+                                    }
+
+
+                                    break;
+                                case "":
+
+                                    break;
+                                default:
+                                    console.log("CHAT: [" + param[0] + "] Comando no reconocido!");
+                                    break;
+                            }
+                        } else {
+                            // texto normal..
+                            this.netSendChatMessage(str);
+                        }
+                    }
 
                 glz.signal(this.in, glz.s_kill);
                 this.buttonChat.setDisable(false);
                 this.st = 0;
                 break;
         }
+    }
+    netSendChatMessage(str) {
+        let m = new glz.NetMessage();
+        m.add("netSendChatMessage");
+        m.add("channel:general");
+        m.add(str);
+        m.send();
     }
     onClick_botonChat() {
         this.st = 100;

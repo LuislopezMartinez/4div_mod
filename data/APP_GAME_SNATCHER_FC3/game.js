@@ -24,19 +24,18 @@ let tex = [];       // array de texturas..
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
-window.TTS = new glz.Tts();
 
 window.setup = function () {
     setBackgroundColor(BLACK);          // color de fondo de pantalla..
-    setFadingColor(BLACK);           // color del fade de pantalla..
+    setFadingColor(BLACK);              // color del fade de pantalla..
     enableShadows(false);               // activa el sistema de sobras..
-    setMode(1280, 720, false, true);   // define la resolucion grafica..
+    setMode(1280, 720, false, true);    // define la resolucion grafica..
     setFps(60);                         // limita los fotogramas por segundo..
     setFog(0, 500);                     // configura la niebla del entorno 3d..
     setAmbientLight(WHITE, 1);          // iluminacion ambiental de la escena 3d..
     glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
-    fadeOn(500);                       // enciendo la pantalla durante 1 segundo..
+    fadeOn(500);                        // enciendo la pantalla durante 1 segundo..
     soundSetMasterVolume(0);
 }
 
@@ -52,7 +51,7 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 7);
+                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 11);
                 loader[1] = new LoadSounds("data/APP_GAME_SNATCHER_FC3/sounds/", 5);
 
                 let list = [];
@@ -158,6 +157,7 @@ class Game extends GameObject {
         this.sky = undefined;
         this.idPersoPantallaTitulo = undefined;
         this.skinNumber = undefined;
+        this.inventario = undefined;
     }
     initialize() {
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
@@ -243,11 +243,6 @@ class Game extends GameObject {
 
                     new es0.Logo(img[1]);
                     new es0.Marco(WIDTH / 2, HEIGHT / 2, PINK);
-
-
-
-                    this.tts = new glz.Tts();
-                    //this.tts.add("Hola mundo!");
 
 
 
@@ -405,8 +400,10 @@ class Game extends GameObject {
         setGravity(0, -90);
         if (glz.isMobile()) this.idTouchControls = new es1.TouchControls();
         this.idTargetManager = new es1.Target(img, fnt);
-        this.sky = new glz.SkyBox(glz.TYPE_CUBEMAP, dataPath + "images/textures/skybox_red/");
-        this.sky.size = 500;
+        //this.sky = new glz.SkyBox(glz.TYPE_CUBEMAP, dataPath + "images/textures/skybox_red/");
+        this.sky = new glz.SkyBox(glz.TYPE_PANORAMA, img[2]);
+        this.sky.size = 250;
+        this.inventario = new es1.Inventario(img, fnt);
     }
 
     netSendNick() {
@@ -489,7 +486,7 @@ window.onNetEvent = function (msg) {
                         break;
                 }
             }
-            let c = new net.NetClient(id, x, y, z, mod, fnt[0], tex);    // creo proceso player en red con su ID en el servidor y el nick..
+            let c = new net.NetClient(id, x, y, z, mod, fnt[0], tex, skin);    // creo proceso player en red con su ID en el servidor y el nick..
             if (localPlayer == true) {
                 c.setLocalPlayer(true);
             } else {

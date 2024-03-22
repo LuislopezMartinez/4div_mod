@@ -60,6 +60,9 @@ export class Personaje extends glz.GameObject {
                 } else {
                     //..
                 }
+
+
+
                 break;
             case 10:
                 this.angley = this.initAngle - (this.initx - glz.mouse.x);

@@ -48,7 +48,7 @@ window.EVENT_touchscreen_end = function (event) {
 }
 //---------------------------------------------------------------------------------
 export class NetClient extends glz.GameObject {
-    constructor(id, x, y, z, model, fnt, tex) {
+    constructor(id, x, y, z, model, fnt, tex, skin) {
         super();
         this.st = 0;
         this.remoteId = id;
@@ -83,7 +83,7 @@ export class NetClient extends glz.GameObject {
         this.openChatDelay = 0;
 
         this.tex = tex;     // texturas cargadas al inicio del juego..
-        this.skin = 0;
+        this.skin = skin;
     }
     initialize() {
         glz.signal(this, glz.s_protected);
@@ -305,10 +305,9 @@ export class NetClient extends glz.GameObject {
     }
 
     RCVChatMessage(msg) {
-        let mensaje = this.nick + ": " + msg[3].split(":")[1];
+        let mensaje = this.nick + ": " + msg[3];
         let c = new NetClient_SUB_chatMessage(mensaje, this.idGame.idChat.fnt);
         c.father = this;
-        window.TTS.add(msg[3].split(":")[1], 1.2);
     }
 
 }
@@ -327,7 +326,7 @@ class NetClient_SUB_chatMessage extends glz.GameObject {
     initialize() {
         let trimmed_message = this.trimWhiteSpaces(this.mensaje);
         this.idText = new glz.Write(this.fnt, 22, trimmed_message, glz.CENTER, this.x, this.y, glz.WHITE, 1);
-        let palabras = this.mensaje.split(" ").length - 1;
+        let palabras = this.mensaje.split(" ").length - 1 + 3;
         this.duracion = palabras * (100 / 60);    // 200 palabras por minuto lectura normald e una persona..
         this.duracion *= glz.getFps();
         this.delta_alpha = 0.9 / this.duracion;
