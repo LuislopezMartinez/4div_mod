@@ -225,9 +225,22 @@ export class Roca extends glz.GameObject {
         super();
         this.st = 0;
         this.obj = obj;
+        this._size_ = 5;
+        this.targeteable = true;
+    }
+    getTarget() {
+        return this;
     }
     initialize() {
-        this.setModel(this.obj);
+        this.y = this._size_;
+        this.x = glz.random(-200, 200);
+        this.z = glz.random(-200, 200);
+        this.createSphere(this._size_);
+        this.createBody(glz.TYPE_SPHERE);
+        this.size = 20;
+        this.setModel(this.obj[0]);
+        this.setStatic(true);
+        this.offset_mesh_y = -this._size_ + 0.2;
     }
     finalize() { }
     frame() {
@@ -314,8 +327,16 @@ export class Target extends glz.GameObject {
                     this.text_nick.visible = true;
 
 
+
+                    let className = window.localPlayer.target.getClassName();
+                    if (window.localPlayer.target != undefined) {
+                        let distance = glz.getDistance(this, window.localPlayer.target);
+                    }
+
                     if (window.localPlayer.target instanceof NetClient) {
                         this.text_nick.setText(window.localPlayer.target.nick);
+                    } else if (window.localPlayer.target instanceof Roca) {
+                        this.text_nick.setText(className);
                     }
 
 

@@ -412,8 +412,9 @@ class Game extends GameObject {
         this.sky = new glz.SkyBox(glz.TYPE_PANORAMA, img[2]);
         this.sky.size = 250;
         this.inventario = new es1.Inventario(img, fnt);
-
-        new es1.Roca(img);
+        for (let i = 0; i < 200; i++) {
+            new es1.Roca(obj);
+        }
 
     }
 

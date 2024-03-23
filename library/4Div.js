@@ -1353,6 +1353,55 @@ export class GameObject {
     }
     //------------------------------------------------------------
     //------------------------------------------------------------
+    setModel(model) {
+        if (this.mesh != undefined) {
+            if (this.model) {
+                removeObject3D(this.mesh);
+            } else {
+                this.mesh.geometry.dispose();
+                this.mesh.material.dispose();
+            }
+            scene.remove(this.mesh);
+        }
+        this.model = true;
+        this.mesh = SkeletonUtils.clone(model);
+
+        this.mesh.animations = [];
+        if (model.animations) {
+            for (let i = 0; i < model.animations.length; i++) {       // fucking clone animas..
+                this.mesh.animations.push(model.animations[i]);
+            }
+        }
+
+        this.mesh.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.material = child.material.clone();
+            }
+        });
+
+        for (let i = 0; i < this.mesh.animations.length; i++) {
+            this.mesh.animations[i].clampWhenFinished = true;
+        }
+
+        // crear clips para el mixer local..
+        for (let i = 0; i < this.mesh.animations.length; i++) {
+            if (this.mixer == undefined) {
+                this.mixer = new THREE.AnimationMixer(this.mesh);
+            }
+            let clip = this.mixer.clipAction(this.mesh.animations[i]);
+            this.clip.clampWhenFinished = true;
+            this.clip.repetitions = Infinity;
+            this.mixerClips.push(clip);
+        }
+
+        this.mesh.updateMatrix();
+        this.mesh.id_ = this.id;
+        this.draw();                // translate/scale/rotate before add to world..
+        scene.add(this.mesh);
+    }
+    //-------
+    //-------
+    /*
     setModel_(model) {
 
         if (this.mesh != undefined) {
@@ -1366,40 +1415,7 @@ export class GameObject {
         }
         this.model = true;
         this.mesh = SkeletonUtils.clone(model);
-        this.mesh.animations = [];
-        if (model.animations) {
-            for (let i = 0; i < model.animations.length; i++) {       // fucking clone animas..
-                this.mesh.animations.push(model.animations[i]);
-            }
-        }
-        this.mesh.traverse(function (child) {
-            if (child instanceof THREE.Mesh) {
-                child.material = child.material.clone();
-            }
-        });
-        for (let i = 0; i < this.mesh.animations.length; i++) {
-            this.mesh.animations[i].clampWhenFinished = true;
-        }
-        this.mesh.updateMatrix();
-        this.mesh.id_ = this.id;
-        this.draw();                // translate/scale/rotate before add to world..
-        scene.add(this.mesh);
-    }
-    //-------
-    //-------
-    setModel(model) {
 
-        if (this.mesh != undefined) {
-            if (this.model) {
-                removeObject3D(this.mesh);
-            } else {
-                this.mesh.geometry.dispose();
-                this.mesh.material.dispose();
-            }
-            scene.remove(this.mesh);
-        }
-        this.model = true;
-        this.mesh = SkeletonUtils.clone(model);
         this.mesh.animations = [];
         if (model.animations) {
             for (let i = 0; i < model.animations.length; i++) {       // fucking clone animas..
@@ -1426,13 +1442,12 @@ export class GameObject {
             this.mixerClips.push(clip);
         }
 
-
-
         this.mesh.updateMatrix();
         this.mesh.id_ = this.id;
         this.draw();                // translate/scale/rotate before add to world..
         scene.add(this.mesh);
     }
+    */
     //-------
     clipSet(num) {
         this.selectedClip = num;
@@ -4123,8 +4138,20 @@ function _main_core_() {
 //---------------------------------------------------------------------------------
 // SONIDO
 //-------
-export function soundSetMasterVolume(value) {
+export function soundSetMasterVolume(value, snd_array = undefined) {
     glz_sound_master_volume = value;
+    if (snd_array != undefined) {
+        for (let i = 0; i < snd_array.length; i++) {
+            let snd = snd_array[i];
+            if (snd.isPlaying()) {
+                let last = snd.last_volume_value;
+                soundSetVolume(snd, last);
+            }
+        }
+    }
+}
+export function soundGetMasterVolume() {
+    return glz_sound_master_volume;
 }
 //-------
 export class SoundPlayTimed extends GameObject {
@@ -4146,7 +4173,8 @@ export class SoundPlayTimed extends GameObject {
 }
 //-------
 export function soundPlay(snd, loop, volume = 0.5) {
-    snd.setVolume(volume * glz_sound_master_volume);
+    soundSetVolume(snd, volume);
+    //snd.setVolume(volume * glz_sound_master_volume);
     snd.play();
     snd.loop(loop);
     return snd;
@@ -4164,6 +4192,7 @@ export function soundStop(snd_, soundsArray) {
 //-------
 export function soundSetVolume(snd, value) {
     snd.setVolume(value * glz_sound_master_volume);
+    snd.last_volume_value = value;
 }
 //-------
 export function soundIsPlaying(snd) {
@@ -4188,7 +4217,8 @@ class SoundFade extends GameObject {
         this.delta = this.volume / this.frames;
     }
     frame() {
-        this.snd.setVolume(this.volume - this.delta);
+        //this.snd.setVolume(this.volume - this.delta);
+        soundSetVolume(this.snd, this.volume - this.delta);
         this.volume = this.snd.getVolume();
         if (this.volume <= 0) {
             this.snd.stop();
