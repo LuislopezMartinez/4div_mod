@@ -1,0 +1,5 @@
+Project Kreator 2024 by Erkosone [Luis lopez martinez].
+
+Este es el programa que permite crear una app  tanto para Windows/Linux/Macos/Android enfocada en el backend para 4Div_mod.
+Esta basada en Processing 4.3.
+

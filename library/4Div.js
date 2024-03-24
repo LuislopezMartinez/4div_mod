@@ -5687,7 +5687,7 @@ export class Cam extends GameObject {
     }
 
     frame() {
-        if (this.mouseControl && !lockUi) {
+        if (this.mouseControl && !mouse.isOverSprite()) {
             if (mouse[this.mouseKey]) {
                 if (!this.isLocked) {
                     this.isLocked = true;
