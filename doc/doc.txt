@@ -51,6 +51,7 @@ MATH:
     float degrees( value );             - Retorna el equivalente en grados del angulo en radianes pasado como parametro.
     boolean isInteger( value );         - Retorna true/false si un valor es entero.
     boolean parseBoolean( string value );- Retorna true/false de un string pasado como parametro.
+    collisionCircleToGameObject( x, y, gameObject ) - Retorna TRUE/FALSE en funcion de su el punto X/Y esta dentro del rectangulo rotado del GameObject.
 
 
 MOUSE:
