@@ -91,7 +91,7 @@ class Game extends Process {
                 this.st = 10;
                 break;
             case 10:
-                //console.log(glz.fps);
+                console.log(glz.fps);
                 break;
         }
     }

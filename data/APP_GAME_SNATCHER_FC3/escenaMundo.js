@@ -22,7 +22,7 @@ export class Inventario extends glz.GameObject {
     initialize() {
         this.x = glz.WIDTH - (this.img[8].width / 2 + 20);
         this.y = glz.HEIGHT / 2;
-        this.buttonBag = new glz.EGUIgbutton(this.img[9], glz.WIDTH - 35, 35);
+        this.buttonBag = new glz.EGUIgbutton(this.img[9], glz.WIDTH - 50, 50);
         this.buttonBag.setEvent("event_inventario_buttonBag");
 
     }
@@ -238,9 +238,9 @@ export class Roca extends glz.GameObject {
         this.createSphere(this._size_);
         this.createBody(glz.TYPE_SPHERE);
         this.size = 20;
-        this.setModel(this.obj[0]);
+        this.setModel(this.obj[glz.randInt(this.obj.length - 1)]);
         this.setStatic(true);
-        this.offset_mesh_y = -this._size_ + 0.2;
+        this.offset_mesh_y = -this._size_ + 0.4;
     }
     finalize() { }
     frame() {
@@ -295,15 +295,34 @@ export class Target extends glz.GameObject {
     constructor(img, fnt) {
         super();
         this.st = 0;
-        this.gr = img[6];
+        this.img = img;
         glz.signal(this, glz.s_protected);
-        this.x = 80;
+        this.x = 60;
         this.y = 80;
-        this.text_nick = new glz.Write(fnt[0], 16, "nick", glz.CENTER, this.x, this.y - 20, glz.WHITE, 1);
+        this.text_name = new glz.Write(fnt[0], 16, "nick", glz.CENTER, this.x, this.y - 20, glz.WHITE, 1);
+
+        this.idFlecha = undefined;
+
     }
     initialize() {
         this.visible = false;
-        this.setGraph(this.gr);
+        this.setGraph(this.img[6]);
+
+        this.idFlecha = new glz.GameObject();
+        this.idFlecha.visible = false;
+        this.idFlecha.offset_x = 0;
+        this.idFlecha.offset_y = 0;
+        this.idFlecha.counter = 0;
+        this.idFlecha.setGraph(this.img[14]);
+        glz.signal(this.idFlecha, glz.s_protected);
+        this.idFlecha.frame = function () {
+            if (this.visible) {
+                this.x = this.offset_x;
+                this.counter = (this.counter + 5) % 360;
+                this.y = (this.offset_y - 70) + glz.sin(glz.radians(this.counter)) * 30;
+            }
+        }
+
     }
     finalize() { }
     frame() {
@@ -324,8 +343,16 @@ export class Target extends glz.GameObject {
                     this.visible = false;
                 }
                 if (this.visible) {
-                    this.text_nick.visible = true;
+                    this.text_name.visible = true;
 
+
+                    // perform target arrow transforms..
+                    let bb = window.localPlayer.target.getBoundingBox();
+                    let vec = new glz.Vector3(window.localPlayer.target.x, bb.max.y, window.localPlayer.target.z);
+                    let screen = glz.worldToScreen(vec);
+                    this.idFlecha.offset_x = screen.x;
+                    this.idFlecha.offset_y = screen.y;
+                    this.idFlecha.visible = true;
 
 
                     let className = window.localPlayer.target.getClassName();
@@ -334,15 +361,16 @@ export class Target extends glz.GameObject {
                     }
 
                     if (window.localPlayer.target instanceof NetClient) {
-                        this.text_nick.setText(window.localPlayer.target.nick);
+                        this.text_name.setText(window.localPlayer.target.nick);
                     } else if (window.localPlayer.target instanceof Roca) {
-                        this.text_nick.setText(className);
+                        this.text_name.setText(className);
                     }
 
 
 
                 } else {
-                    this.text_nick.visible = false;
+                    this.text_name.visible = false;
+                    this.idFlecha.visible = false;
                 }
                 break;
             case 10:

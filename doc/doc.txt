@@ -66,7 +66,7 @@ MOUSE:
         .intersect( GameObject )        - Retorna true/false si el proceso pasado por parametro colisiona con el mouse "siempre que el proceso tenga un modelo 3d".
         .setEventStart( eventName )     - Establece un nombre de funcion callback para cuando un dedo toca la pantalla del dispositivo.
         .setEventEnd( eventName )       - Establece un nombre de funcion callback para cuando un dede deja de tocar la pantalla.
-
+        .isOverSprite();                - Retorna TRUE/FALSE en funcion de si se ha hecho click encima de un Sprite.
 
 SCREEN:
     fadeOn( int milliseconds );         - Funde la pantalla "activa" durante un tiempo pasado como parametro..
@@ -225,6 +225,7 @@ class GameObject()
     .getDistance( a, b );               - Mide la distancia entre dos procesos.
     .getAngle( a, b );                  - Mide el angulo entre dos procesos.
     .onScreen();                        - Retorna TRUE|FALSE si el grafico o modelo 3d estan en el campo de vision de la camara.
+    .getBoundingBox();                  - Retorna el boundingBox correspondiente al mesh del GameObject.
 
 class JoyStick( x, y, width, height )
     - Esta clase es un joy on screen diseñado para ofrecer una forma simple y rapida de control tactil analogico y digital.
@@ -257,8 +258,6 @@ TO-DO:
     class DirectionalLight();
     class PointLight();
     class SpotLight();
-
     class Tts();
-    
-    
     include( filename );
+    

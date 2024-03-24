@@ -715,6 +715,11 @@ export class GameObject {
         scene.add(this.mesh);
     }
     //------------------------------------------------------------
+    getBoundingBox() {
+        if (this.mesh == undefined) return;
+        return new THREE.Box3().setFromObject(this.mesh);
+    }
+    //------------------------------------------------------------
     createMaterial(shaderType, col, texture_repeat = false, repeat_divisions = 10) {
         switch (shaderType) {
             case BASIC:
@@ -1850,8 +1855,13 @@ class Mouse extends GameObject {
         this.eventStartName = undefined;
         this.eventEndName = undefined;
 
+        this.gameObject_collision = false;
+
     }
     initialize() {
+    }
+    isOverSprite() {
+        return this.gameObject_collision;
     }
     frame() {
         if (this.oldX === this.x && this.oldY === this.y) {
@@ -2130,6 +2140,13 @@ function handleMouseDown(event) {
     }
     mouse.canvas_x = event.clientX;
     mouse.canvas_y = event.clientY;
+
+    let x = (mouse.canvas_x * WIDTH) / window.innerWidth;
+    let y = (mouse.canvas_y * HEIGHT) / window.innerHeight;
+    for (let i = 0; i < gameObjects.length; i++) {
+        if (collisionCircleToGameObject(x, y, gameObjects[i])) mouse.gameObject_collision = true;   // mouse intersect with gameObject graph..
+    }
+
 }
 //-------
 function handleMouseUp(event) {
@@ -2151,6 +2168,8 @@ function handleMouseUp(event) {
     }
     mouse.canvas_x = event.clientX;
     mouse.canvas_y = event.clientY;
+
+    mouse.gameObject_collision = false;
 }
 //-------
 function handleMouseMove(event) {
@@ -2158,9 +2177,6 @@ function handleMouseMove(event) {
     mouse.canvas_x = event.clientX;
     mouse.canvas_y = event.clientY;
     mouse.updateMousePointsPosition(event.clientX, event.clientY);
-    //const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    //const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-    //mouse.setMovementXY(movementX, movementY);
 }
 //-------
 function handleStart(event) {
@@ -2173,6 +2189,7 @@ function handleStart(event) {
     for (var i = 0; i < event.changedTouches.length; i++) {
         mouse.setPoint(event.changedTouches[i].identifier, true, event.changedTouches[i].clientX, event.changedTouches[i].clientY);
     }
+
 }
 //-------
 function handleEnd(event) {
@@ -5974,3 +5991,94 @@ export class SkyBox extends GameObject {
     }
 }
 //---------------------------------------------------------------------------------
+export function worldToScreen(pos) {
+    if (pos instanceof THREE.Vector3) {
+        let vector = pos.project(camera);
+        vector.x = (vector.x + 1) / 2 * WIDTH;
+        vector.y = -(vector.y - 1) / 2 * HEIGHT;
+        return vector;
+    } else {
+        console.error("ERROR: Parameter isn´t a THREE.Vector3() object!");
+        return undefined;
+    }
+}
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+// Ported to JavaScript from 
+// http://www.migapro.com/circle-and-rotated-rectangle-collision-detection/
+//
+// An example:
+// var circle: { x: 20, y: 10, radius: 20 };
+// var rect: { x: 30, y: 30, width: 100, height: 100, rotation: Math.PI / 2 };
+// collideCircleWithRotatedRectangle( circle, rect );
+// // returns true.
+// 
+//
+// Please note:
+// This code assumes that rect.x and rect.y are the CENTER coordinates
+// of the rectangle. You may want to to change this.
+// Also rotation values need to be in RADIANS.
+
+// custom rebamp of this function for mouse collision detection with GameObjects in 4Div by Erkosone.
+
+export function collisionCircleToGameObject(x_, y_, _gameObject_) {
+    if (!(_gameObject_ instanceof GameObject)) return false;
+    if (_gameObject_.graph == undefined) return false;
+
+
+    let circle = { x: x_, y: y_, radius: 1 };
+    let rect;
+    if (_gameObject_.sizex != 1 || _gameObject_.sizey != 1) {
+        rect = { x: _gameObject_.x, y: _gameObject_.y, width: _gameObject_.graph.width * _gameObject_.sizex, height: _gameObject_.graph.height * _gameObject_.sizey, rotation: radians(_gameObject_.angle) };
+    } else {
+        rect = { x: _gameObject_.x, y: _gameObject_.y, width: _gameObject_.graph.width * _gameObject_.size, height: _gameObject_.graph.height * _gameObject_.size, rotation: radians(_gameObject_.angle) };
+    }
+
+
+    let rectCenterX = rect.x;
+    let rectCenterY = rect.y;
+
+    let rectX = rectCenterX - rect.width / 2;
+    let rectY = rectCenterY - rect.height / 2;
+
+    let rectReferenceX = rectX;
+    let rectReferenceY = rectY;
+
+    // Rotate circle's center point back
+    let unrotatedCircleX = Math.cos(rect.rotation) * (circle.x - rectCenterX) - Math.sin(rect.rotation) * (circle.y - rectCenterY) + rectCenterX;
+    let unrotatedCircleY = Math.sin(rect.rotation) * (circle.x - rectCenterX) + Math.cos(rect.rotation) * (circle.y - rectCenterY) + rectCenterY;
+
+    // Closest point in the rectangle to the center of circle rotated backwards(unrotated)
+    let closestX, closestY;
+
+    // Find the unrotated closest x point from center of unrotated circle
+    if (unrotatedCircleX < rectReferenceX) {
+        closestX = rectReferenceX;
+    } else if (unrotatedCircleX > rectReferenceX + rect.width) {
+        closestX = rectReferenceX + rect.width;
+    } else {
+        closestX = unrotatedCircleX;
+    }
+
+    // Find the unrotated closest y point from center of unrotated circle
+    if (unrotatedCircleY < rectReferenceY) {
+        closestY = rectReferenceY;
+    } else if (unrotatedCircleY > rectReferenceY + rect.height) {
+        closestY = rectReferenceY + rect.height;
+    } else {
+        closestY = unrotatedCircleY;
+    }
+
+    // Determine collision
+    let collision = false;
+    let distance = getDistance2d(unrotatedCircleX, unrotatedCircleY, closestX, closestY);
+
+    if (distance < circle.radius) {
+        collision = true;
+    }
+    else {
+        collision = false;
+    }
+
+    return collision;
+}

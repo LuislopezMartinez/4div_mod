@@ -37,7 +37,7 @@ window.setup = function () {
     glz.setCameraPosition(0, 20, -50);  // set position inicial de la camara hacia la escena..
     fadeOff(0);                         // apaga inmediatamente la pantalla 0 ms..
     fadeOn(500);                        // enciendo la pantalla durante 1 segundo..
-    soundSetMasterVolume(0);
+    soundSetMasterVolume(1);
 }
 
 window.main = function () {
@@ -52,7 +52,7 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 11);
+                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 14);
                 loader[1] = new LoadSounds("data/APP_GAME_SNATCHER_FC3/sounds/", 5);
 
                 let list = [];
@@ -124,6 +124,17 @@ window.main = function () {
     }
 }
 //---------------------------------------------------------------------------------
+window.event_game_buttonMuteSound = function () {
+    if (glz.soundGetMasterVolume() == 1) {
+        glz.soundSetMasterVolume(0, snd);
+        let b = glz.getCaller();
+        b.setGraph(img[13]);
+    } else {
+        glz.soundSetMasterVolume(1, snd);
+        let b = glz.getCaller();
+        b.setGraph(img[12]);
+    }
+}
 window.event_game_pantallaTitulo_botonLeft = function () {
     idGame.onClick_pantallaTitulo_botonLeft();
 }
@@ -166,11 +177,16 @@ class Game extends GameObject {
         this.idPersoPantallaTitulo = undefined;
         this.skinNumber = undefined;
         this.inventario = undefined;
+        this.idButtonMuteAudio = undefined;
     }
     initialize() {
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
         this.a = new Write(fnt[0], 32, "LUIS LOPEZ MARTINEZ", CENTER, WIDTH / 2, HEIGHT / 2, WHITE, 1);
         new Write(fnt[1], 16, "4Div_mod - 2024", CENTER, WIDTH / 2, HEIGHT / 2 + 32, YELLOW, 1);
+
+        this.idButtonMuteAudio = new EGUIgbutton(img[12], WIDTH - 120, 50, 1);
+        signal(this.idButtonMuteAudio, s_protected);
+        this.idButtonMuteAudio.setEvent("event_game_buttonMuteSound");
 
         let contador_frase_inicio = 0;
         if (data.contains("contador_frase_inicio")) {
@@ -191,7 +207,12 @@ class Game extends GameObject {
         soundPlay(snd[0], false, 0.2);
         fadeOn(2000);
     }
+    finalize() {
+        signal(this.idButtonMuteAudio, s_unprotected);
+        signal(this.idButtonMuteAudio, s_kill);
+    }
     frame() {
+
         switch (this.st) {
             case 0:
                 if (!soundIsPlaying(snd[0]) || glz.mouse.left) {
@@ -400,7 +421,7 @@ class Game extends GameObject {
     }
 
     createWorld() {
-        setAmbientLight(WHITE, 0.4);
+        //setAmbientLight(WHITE, 0.4);
         let luz = new glz.SpotLight(WHITE, 10000);
         luz.y = 40;
         this.idChat = new es1.Chat(img[7], fnt[0]);
@@ -415,7 +436,7 @@ class Game extends GameObject {
         for (let i = 0; i < 200; i++) {
             new es1.Roca(obj);
         }
-
+        unlockEGUI();
     }
 
     netSendNick() {

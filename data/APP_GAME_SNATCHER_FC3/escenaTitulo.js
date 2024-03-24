@@ -111,6 +111,7 @@ export class Logo extends glz.GameObject {
         this.gr.y = this.y;
         this.gr.size = this.size;
         this.gr.setGraph(this.grx);
+        console.log(this.graph);
 
     }
     frame() {
