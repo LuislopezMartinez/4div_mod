@@ -16,12 +16,13 @@ let HEIGHT;
 let ST = 0;         // maquina de estados del codigo principal de la aplicacion..
 let text_inicio;
 var loader = [];    // array de loaders para la carga de diferentes tipos de recursos por separado..
-let img = [];       // array de imagenes para pixi..
-let snd = [];       // array de sonidos para waud..
-let mod = [];       // array de modelos 3d..
-let fnt = [];       // array de fuentes de texto..
-let tex = [];       // array de texturas..
-let obj = [];
+export let img = [];       // array de imagenes para pixi..
+export let snd = [];       // array de sonidos para waud..
+export let mod = [];       // array de modelos 3d..
+export let fnt = [];       // array de fuentes de texto..
+export let tex = [];       // array de texturas..
+export let obj = [];
+export let skills = [];
 let idGame;         // puntero al proceso principal..
 const dataPath = "data/APP_GAME_SNATCHER_FC3/";
 let data = new Storage();
@@ -52,7 +53,7 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 14);
+                loader[0] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/", 15);
                 loader[1] = new LoadSounds("data/APP_GAME_SNATCHER_FC3/sounds/", 5);
 
                 let list = [];
@@ -67,6 +68,7 @@ window.main = function () {
                 lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk.fbx");
                 lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk_side_1.fbx");
                 lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/walk_side_2.fbx");
+                lista.push("data/APP_GAME_SNATCHER_FC3/models/perso/Cow_Milking.fbx");
                 loader[3] = new LoadModels(lista);
 
                 let listo = [];
@@ -87,6 +89,9 @@ window.main = function () {
                 objlist.push("data/APP_GAME_SNATCHER_FC3/models/objects/rockB.obj");
                 objlist.push("data/APP_GAME_SNATCHER_FC3/models/objects/rockC.obj");
                 loader[5] = new glz.LoadModels(objlist);
+
+                loader[6] = new LoadImages("data/APP_GAME_SNATCHER_FC3/images/skills/", 16);
+
                 ST = 20;
             }
             break;
@@ -104,6 +109,7 @@ window.main = function () {
                 mod = loader[3].get();
                 tex = loader[4].get();
                 obj = loader[5].get();
+                skills = loader[6].get();
                 fadeOff(500);
                 ST = 30;
             }
@@ -124,15 +130,22 @@ window.main = function () {
     }
 }
 //---------------------------------------------------------------------------------
+window.event_name_inHost = function () {
+    let caller = glz.getCaller();
+    idGame.onClick_inHost(caller);
+}
+window.event_game_buttonConfig = function () {
+    idGame.onClick_buttonConfig();
+};
 window.event_game_buttonMuteSound = function () {
     if (glz.soundGetMasterVolume() == 1) {
         glz.soundSetMasterVolume(0, snd);
-        let b = glz.getCaller();
-        b.setGraph(img[13]);
+        idGame.idButtonMuteAudio.setGraph(img[13]);
+        data.set("audio_muted", true);
     } else {
         glz.soundSetMasterVolume(1, snd);
-        let b = glz.getCaller();
-        b.setGraph(img[12]);
+        idGame.idButtonMuteAudio.setGraph(img[12]);
+        data.set("audio_muted", false);
     }
 }
 window.event_game_pantallaTitulo_botonLeft = function () {
@@ -178,8 +191,16 @@ class Game extends GameObject {
         this.skinNumber = undefined;
         this.inventario = undefined;
         this.idButtonMuteAudio = undefined;
+        this.idButtonConfig = undefined;
+        this.idInHost = undefined;
+        this.server_ip = "192.168.1.136";
+        this.actionBar = undefined;
     }
     initialize() {
+        if (data.contains("server_ip")) {
+            this.server_ip = data.get("server_ip");
+        }
+
         new Write(fnt[0], 14, "UNA PRODUCCION DE:", CENTER, WIDTH / 2, HEIGHT / 2 - 32, 0xa9eca2, 1);
         this.a = new Write(fnt[0], 32, "LUIS LOPEZ MARTINEZ", CENTER, WIDTH / 2, HEIGHT / 2, WHITE, 1);
         new Write(fnt[1], 16, "4Div_mod - 2024", CENTER, WIDTH / 2, HEIGHT / 2 + 32, YELLOW, 1);
@@ -187,6 +208,11 @@ class Game extends GameObject {
         this.idButtonMuteAudio = new EGUIgbutton(img[12], WIDTH - 120, 50, 1);
         signal(this.idButtonMuteAudio, s_protected);
         this.idButtonMuteAudio.setEvent("event_game_buttonMuteSound");
+        if (data.contains("audio_muted")) {
+            let mute = data.get("audio_muted");
+            if (mute == "true") window.event_game_buttonMuteSound();
+
+        }
 
         let contador_frase_inicio = 0;
         if (data.contains("contador_frase_inicio")) {
@@ -211,6 +237,20 @@ class Game extends GameObject {
         signal(this.idButtonMuteAudio, s_unprotected);
         signal(this.idButtonMuteAudio, s_kill);
     }
+    onClick_buttonConfig() {
+        if (!exists(this.idInHost)) {
+            this.idInHost = new EGUIinputBox(fnt[0], 22, "Host: ", this.server_ip, 340, 50, 250);
+            this.idInHost.setLabelColor(WHITE);
+            this.idInHost.setEvent("event_name_inHost");
+            this.idInHost.setFocus(true);
+        }
+    }
+    onClick_inHost(idWidget) {
+        this.server_ip = idWidget.get();
+        signal(idWidget, s_kill);
+        this.idInHost = undefined;
+        data.set("server_ip", idGame.server_ip);
+    }
     frame() {
 
         switch (this.st) {
@@ -229,6 +269,8 @@ class Game extends GameObject {
 
                     this.idPersoPantallaTitulo = new es0.Personaje(mod, tex, idGame);
 
+                    this.idButtonConfig = new EGUIgbutton(img[15], 50, 50, 1);
+                    this.idButtonConfig.setEvent("event_game_buttonConfig");
 
                     this.sky = new glz.SkyBox(glz.TYPE_PANORAMA, img[2]);
                     //this.sky = new glz.SkyBox(glz.TYPE_CUBEMAP, dataPath + "images/textures/skybox_red/");
@@ -336,7 +378,7 @@ class Game extends GameObject {
                 break;
 
             case 500:
-                glz.socketOpen("ws://192.168.1.136", 9080);
+                glz.socketOpen("ws://" + this.server_ip, 9080);
                 this.st = 510;
                 break;
             case 510:
@@ -413,6 +455,7 @@ class Game extends GameObject {
 
         }
     }
+
     onClick_pantallaTitulo_botonLeft() {
         this.idPersoPantallaTitulo.anterior();
     }
@@ -433,6 +476,7 @@ class Game extends GameObject {
         this.sky = new glz.SkyBox(glz.TYPE_PANORAMA, img[2]);
         this.sky.size = 250;
         this.inventario = new es1.Inventario(img, fnt);
+
         for (let i = 0; i < 200; i++) {
             new es1.Roca(obj);
         }

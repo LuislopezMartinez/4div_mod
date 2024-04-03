@@ -1,7 +1,57 @@
 import * as glz from '../../library/4Div.js';
 import { NetClient } from './NetPlayer.js';
 import * as vars from './globalVariables.js';
+import * as main from './game.js';
 //---------------------------------------------------------------------------------
+window.event_actionBar_buttonAction = function () {
+    glz.getCaller().father.onClick_buttonAction();
+}
+//---------------------------------------------------------------------------------
+export class ActionBar extends glz.GameObject {
+    constructor() {
+        super();
+        this.st = 0;
+        this.x = glz.WIDTH / 2;
+        this.y = glz.HEIGHT - 80;
+        this.buttonAction = undefined;
+        this.casillaFondo = glz.screenDrawGraphic(main.skills[16], this.x, this.y);
+    }
+    initialize() {
+        let obj = window.localPlayer.target.getClassName();
+        switch (obj) {
+            case "Roca":
+                this.buttonAction = new glz.EGUIgbutton(main.skills[11], this.x, this.y);
+                this.buttonAction.setEvent("event_actionBar_buttonAction");
+                break;
+            default:
+                this.buttonAction = new glz.EGUIgbutton(main.skills[8], this.x, this.y);
+                break;
+        }
+
+    }
+    finalize() {
+        glz.signal(this.buttonAction, glz.s_kill);
+        glz.signal(this.casillaFondo, glz.s_kill);
+
+    }
+    onClick_buttonAction() {
+
+    }
+    frame() {
+        switch (this.st) {
+            case 0:
+
+                break;
+            case 10:
+
+                break;
+        }
+    }
+}
+//---------------------------------------------------------------------------------
+class CastBar extends glz.GameObject {
+
+}
 //---------------------------------------------------------------------------------
 window.event_inventario_buttonBag = function () {
     glz.getCaller().father.onClick_botonBag();
@@ -302,6 +352,8 @@ export class Target extends glz.GameObject {
         this.text_name = new glz.Write(fnt[0], 16, "nick", glz.CENTER, this.x, this.y - 20, glz.WHITE, 1);
 
         this.idFlecha = undefined;
+        this.mouseMovedWhenClicking = false;
+        this.actionBar = undefined;
 
     }
     initialize() {
@@ -333,7 +385,6 @@ export class Target extends glz.GameObject {
             this.targetDesktopRuntime();
         }
 
-        //this.targetRuntime();
         if (glz.key(glz._ESC)) window.localPlayer.target = undefined;
         switch (this.st) {
             case 0:
@@ -356,8 +407,23 @@ export class Target extends glz.GameObject {
 
 
                     let className = window.localPlayer.target.getClassName();
+
+
+                    // CONTROL DE ACTION FARM BUTTON..
                     if (window.localPlayer.target != undefined) {
-                        let distance = glz.getDistance(this, window.localPlayer.target);
+                        let distance = glz.getDistance(window.localPlayer, window.localPlayer.target);
+                        if (distance < vars.NET_PLAYER_MIN_DISTANCE_SHOW_ACTIONBAR_FARM) {
+                            if (this.actionBar == undefined) {
+                                this.actionBar = new ActionBar();
+                            }
+                        } else {
+                            if (this.actionBar != undefined) {
+                                glz.signal(this.actionBar, glz.s_kill);
+                                this.actionBar = undefined;
+                            }
+                        }
+
+
                     }
 
                     if (window.localPlayer.target instanceof NetClient) {
@@ -371,6 +437,10 @@ export class Target extends glz.GameObject {
                 } else {
                     this.text_name.visible = false;
                     this.idFlecha.visible = false;
+                    if (this.actionBar != undefined) {
+                        glz.signal(this.actionBar, glz.s_kill);
+                        this.actionBar = undefined;
+                    }
                 }
                 break;
             case 10:
@@ -426,23 +496,34 @@ export class Target extends glz.GameObject {
     }
     targetDesktopRuntime() {
         if (glz.mouse.left) {
-            let found = false;
-            for (let i = 0; i < glz.gameObjects.length; i++) {
-                let c = glz.gameObjects[i];
-                if (c.targeteable != undefined) {
-                    let collision = false;
-                    if (glz.mouse.intersect(c)) collision = true;
-                    if (collision) {
-                        found = true;
-                        if (window.localPlayer == c.getTarget()) {
-                            window.localPlayer.target = undefined;
-                        } else {
-                            window.localPlayer.target = c.getTarget();
+
+            if (glz.mouse.moved) {
+                this.mouseMovedWhenClicking = true;
+            }
+
+            if (this.mouseMovedWhenClicking == false && !glz.mouse.isOverSprite()) {
+                let found = false;
+                for (let i = 0; i < glz.gameObjects.length; i++) {
+                    let c = glz.gameObjects[i];
+                    if (c.targeteable != undefined) {
+                        let collision = false;
+                        if (glz.mouse.intersect(c)) collision = true;
+                        if (collision && !this.mouseMovedWhenClicking) {
+                            found = true;
+                            if (window.localPlayer == c.getTarget()) {
+                                window.localPlayer.target = undefined;
+                            } else {
+                                window.localPlayer.target = c.getTarget();
+                            }
                         }
                     }
                 }
+                if (!found) window.localPlayer.target = undefined;
             }
-            if (!found) window.localPlayer.target = undefined;
+
+
+        } else {
+            this.mouseMovedWhenClicking = false;
         }
         // control de perdida del target..
         if (window.localPlayer.target != undefined) {

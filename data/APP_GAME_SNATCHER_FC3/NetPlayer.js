@@ -85,6 +85,8 @@ export class NetClient extends glz.GameObject {
 
         this.tex = tex;     // texturas cargadas al inicio del juego..
         this.skin = skin;
+
+        this.action = 0;
     }
     initialize() {
         this.idTextNick = new glz.Write(this.fnt, 22, this.nick, glz.CENTER, this.x, this.y, glz.YELLOW, 1);
@@ -100,6 +102,9 @@ export class NetClient extends glz.GameObject {
             }
         }
         glz.signal(this.idJoy, glz.s_kill);
+    }
+    setAction(num) {
+        this.action = num;
     }
     setSkin(skinNumber) {
         this.skin = skinNumber;
@@ -374,7 +379,7 @@ class NetClient_SUB_animator extends glz.GameObject {
         this.skin = 0;
 
         this.targeteable = true;
-
+        // this.action esta en el father..
     }
     setSkin(skinNumber) {
         this.skin = skinNumber;
@@ -424,58 +429,76 @@ class NetClient_SUB_animator extends glz.GameObject {
                 this.z = this.father.z;
 
                 if (this.father.local) {
-                    // ajusto angulo del personaje cuando me muevo..
-                    if (this.father.moved) {
-                        this.angley = window.idCam.lon;
-                    }
-
-                    if (this.father.moved) {
-                        let anima = 0;
-                        if (this.father.up) anima = 1;
-                        if (this.father.down) anima = 1;
-                        if (this.father.left) anima = 3;
-                        if (this.father.right) anima = 2;
-                        this.clipSwitch(anima, 250);
-                    } else {
-                        this.clipSwitch(0, 250);
-                    }
+                    this.animationLocal();
 
                 } else {
+                    this.animationRemote();
 
-                    let delta = this.angley - this.father.remoteAngle;
-                    if (this.angley < this.father.remoteAngle) {
-                        if (glz.abs(delta) > 180) {
-                            // evitar giros mayores de 180º casuales..
-                        } else {
-                            this.angley += glz.abs(delta) / 20;
-                        }
-                    } else if (this.angley > this.father.remoteAngle) {
-                        if (glz.abs(delta) > 180) {
-                            // evitar giros mayores de 180º casuales..
-                        } else {
-                            this.angley -= glz.abs(delta) / 20;
-                        }
-                    }
-
-                    let dx = this.x - this.oldx;
-                    let dz = this.z - this.oldz;
-                    let v = glz.abs(dx) + glz.abs(dz);
-                    if (v > 0.05) {
-
-                        if (this.father.remoteControls.includes("L")) {
-                            this.clipSwitch(3, 250);
-                        } else if (this.father.remoteControls.includes("R")) {
-                            this.clipSwitch(2, 250);
-                        } else {
-                            this.clipSwitch(1, 250);
-                        }
-
-                    } else {
-                        this.clipSwitch(0, 250);
-                    }
                 }
 
                 break;
+        }
+    }
+    animationLocal() {
+        // ajusto angulo del personaje cuando me muevo..
+        if (this.father.moved) {
+            this.angley = window.idCam.lon;
+        }
+
+        switch (this.father.action) {
+            // NO ACTION..
+            case 0:
+                if (this.father.moved) {
+                    let anima = 0;
+                    if (this.father.up) anima = 1;
+                    if (this.father.down) anima = 1;
+                    if (this.father.left) anima = 3;
+                    if (this.father.right) anima = 2;
+                    this.clipSwitch(anima, 250);
+                } else {
+                    this.clipSwitch(0, 250);
+                }
+                break;
+            // FARM ACTION..
+            case 1:
+                this.clipSwitch(4, 250);
+                break;
+        }
+
+
+
+    }
+    animationRemote() {
+        let delta = this.angley - this.father.remoteAngle;
+        if (this.angley < this.father.remoteAngle) {
+            if (glz.abs(delta) > 180) {
+                // evitar giros mayores de 180º casuales..
+            } else {
+                this.angley += glz.abs(delta) / 20;
+            }
+        } else if (this.angley > this.father.remoteAngle) {
+            if (glz.abs(delta) > 180) {
+                // evitar giros mayores de 180º casuales..
+            } else {
+                this.angley -= glz.abs(delta) / 20;
+            }
+        }
+
+        let dx = this.x - this.oldx;
+        let dz = this.z - this.oldz;
+        let v = glz.abs(dx) + glz.abs(dz);
+        if (v > 0.05) {
+
+            if (this.father.remoteControls.includes("L")) {
+                this.clipSwitch(3, 250);
+            } else if (this.father.remoteControls.includes("R")) {
+                this.clipSwitch(2, 250);
+            } else {
+                this.clipSwitch(1, 250);
+            }
+
+        } else {
+            this.clipSwitch(0, 250);
         }
     }
 }

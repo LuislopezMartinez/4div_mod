@@ -7,6 +7,10 @@ import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
+export function getPixi() {
+    return PIXI;
+}
+
 export const s_kill = 77;
 export const s_protected = 777;
 export const s_unprotected = 7777;
@@ -1549,20 +1553,6 @@ export class GameObject {
         this.graph = undefined;
         let tex = this.createTexture(w, h, WHITE);
         this.setGraph(tex);
-    }
-    newGraph_(w, h) {
-        if (this.graph !== undefined) {
-            app.stage.removeChild(this.graph);
-        }
-
-        this.graph = new PIXI.Sprite(PIXI.Texture.WHITE);
-        this.graph.width = w;
-        this.graph.height = h;
-        this.draw();
-        app.stage.addChild(this.graph);
-        this.newgraph_created = true;
-        this._w = w;
-        this._h = h;
     }
     clearGraph() {
         if (this.graph !== undefined) {
@@ -6082,3 +6072,7 @@ export function collisionCircleToGameObject(x_, y_, _gameObject_) {
 
     return collision;
 }
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------

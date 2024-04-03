@@ -2,6 +2,7 @@ import * as glz from '../../library/4Div.js';
 export let netClients = [];
 export const NET_PLAYER_MAX_DISTANCE_AUTO_ADJUST_POSITION = 50;    // si el player en red recive su posicion y esta a mas de esta distancia.. no se interpolara la posicion, se ajustara de una vez.
 export const NET_PLAYER_MIN_DISTANCE_AUTO_ADJUST_POSITION = 10;      // si estas muy cerca del destino te colocas ya ahi.. evita pequeños ajustes super lentos..
+export const NET_PLAYER_MIN_DISTANCE_SHOW_ACTIONBAR_FARM = 12;
 
 export let frases = [];
 frases.push("La clave es comprender antes de reaccionar.");
