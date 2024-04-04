@@ -137,25 +137,6 @@ class Game extends glz.GameObject {
     }
 
     // FUNCION QUE DESCOMPONE UN SEGMENTO EN UNA COLECCIÓN DE PUNTOS PARA EVITAR SALTOS INDESEADOS O GLITCHES GRAFICOS..
-    drawPointLine_() {
-        let oldPos = new glz.Vector2(glz.mouse.oldx, glz.mouse.oldy);
-        let newPos = new glz.Vector2(glz.mouse.x, glz.mouse.y);
-        const delta = { x: oldPos.x - newPos.x, y: oldPos.y - newPos.y };
-        let deltaLength = oldPos.distanceTo(newPos);
-        this.drawPoint(newPos);
-        if (deltaLength > 1) {
-            const additionalPoints = deltaLength;
-            for (let i = 1; i < additionalPoints; i++) {
-                const pos = {
-                    x: newPos.x + delta.x * (i / additionalPoints),
-                    y: newPos.y + delta.y * (i / additionalPoints),
-                };
-
-                this.drawPoint(pos);
-            }
-        }
-    }
-
     drawPointLine() {
         let oldPos = new glz.Vector2(glz.mouse.oldx, glz.mouse.oldy);
         let newPos = new glz.Vector2(glz.mouse.x, glz.mouse.y);

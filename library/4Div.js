@@ -6073,6 +6073,74 @@ export function collisionCircleToGameObject(x_, y_, _gameObject_) {
     return collision;
 }
 //---------------------------------------------------------------------------------
+export function createButton(font, size, text, x, y, eventName = "") {
+    let fnt = undefined;
+    if (font === null) {
+        fnt = 'fnt';
+    } else {
+        if (font != 'fnt') {
+            fnt = font.family;
+        }
+    }
+    const b = document.createElement('button');
+    b.textContent = text;
+    b.style.fontFamily = fnt;
+    b.style.fontSize = size + 'px';
+    b.style.position = 'absolute';
+    b.style.top = y + 'px';
+    b.style.left = x + 'px';
+    b.style.zIndex = '3';
+    document.body.appendChild(b);
+    //b.addEventListener('click', () => { method(eventName) });
+    return b;
+}
 //---------------------------------------------------------------------------------
+export function createSlider(x, y, width, min = 0, max = 100, value = 0, step = 1) {
+    let slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = min;
+    slider.max = max;
+    slider.value = value;
+    slider.step = step;
+    slider.style.width = width + 'px';
+    slider.style.position = 'absolute';
+    slider.style.top = y + 'px';
+    slider.style.left = x + 'px';
+    slider.style.zIndex = '3';
+    document.body.appendChild(slider);
+    return slider;
+}
 //---------------------------------------------------------------------------------
+export function createLabel(font, size, text, align, x, y) {
+    let fnt = undefined;
+    if (font === null) {
+        fnt = 'fnt';
+    } else {
+        if (font != 'fnt') {
+            fnt = font.family;
+        }
+    }
+    const b = document.createElement('label');
+    b.textContent = text;
+    b.style.fontFamily = fnt;
+    b.style.fontSize = size + 'px';
+    b.style.position = 'absolute';
+    b.style.top = y + 'px';
+
+    b.style.zIndex = '3';
+    document.body.appendChild(b);
+    switch (align) {
+        case RIGHT:
+            //..
+            break;
+        case LEFT:
+            x -= Math.ceil(b.clientWidth) * 2;
+            break;
+        case CENTER:
+            x -= Math.ceil(b.clientWidth);
+            break;
+    }
+    b.style.left = x + 'px';
+    return b;
+}
 //---------------------------------------------------------------------------------
