@@ -12,7 +12,7 @@ let snd = [];       // array de sonidos para waud..
 let mod = [];       // array de modelos 3d..
 let fnt = [];
 let idGame;         // puntero al proceso principal..
-const dataPath = "data/myGameFolder/";
+const dataPath = "data/APP_DIBUJO/";
 
 window.setup = function () {
     glz.setBackgroundColor(glz.WHITE);          // color de fondo de pantalla..
@@ -37,12 +37,6 @@ window.main = function () {
             if (glz.mouse.left) {
                 text_inicio.text = "loading assets..";
                 text_inicio.color = 0x000000;
-                //loader[0] = new LoadImages("data/myGameFolder/images/", 0);
-                //loader[1] = new LoadSounds("data/myGameFolder/sounds/", 0);
-                //let lista = [];
-                //lista.push("data/myGameFolder/models/yourModelFilename.ext");
-                //loader[2] = new LoadModels(lista);
-
                 ST = 20;
             }
             break;
@@ -54,9 +48,6 @@ window.main = function () {
                 }
             }
             if (loaderReady) {
-                //img = loader[0].get();
-                //snd = loader[1].get();
-                //mod = loader[2].get();
                 glz.fadeOff(500);
                 ST = 30;
             }
@@ -75,20 +66,76 @@ window.main = function () {
     }
 }
 //---------------------------------------------------------------------------------
+window.event_game_botonDeshacer = function () {
+    if (idGame.sprites.length > 0) {
+        glz.signal(idGame.sprites[idGame.sprites.length - 1], glz.s_kill);
+        idGame.sprites.pop();
+    }
+}
+//---------------------------------------------------------------------------------
 class Game extends glz.GameObject {
     constructor() {
         super();
-        this.st = 0;
+        this.pixi = undefined;
+        this.gr = undefined;
+        this.crearProceso = false;
+        this.sprites = [];
+        this.botonDeshacer = undefined;
     }
     initialize() {
+        this.botonDeshacer = new glz.EGUIbutton(null, 22, "DESHACER", 100, 30, glz.WHITE);
+        this.botonDeshacer.setEvent("event_game_botonDeshacer");
+        this.pixi = glz.getPixi();
+        this.gr = new this.pixi.Graphics();
+        glz.app.stage.addChild(this.gr);
         glz.fadeOn(1000);
     }
     frame() {
-        switch (this.st) {
-            case 0:
-
-                break;
+        if (glz.mouse.left) {
+            if (glz.mouse.moved) {
+                this.pinta();
+            }
+        } else {
+            // SI HE PINTADO.. CREAR SNAPSHOT DEL PIXI.GRAPHICS..
+            this.generarSprite();
         }
+    }
+    generarSprite() {
+        if (this.crearProceso) {
+            this.crearProceso = false;
+            let proceso = new glz.GameObject();
+            let textura = glz.app.renderer.generateTexture(this.gr);
+            proceso.x = this.gr._localBoundsRect.x + this.gr._localBoundsRect.width / 2;
+            proceso.y = this.gr._localBoundsRect.y + this.gr._localBoundsRect.height / 2;
+            proceso.setGraph(textura);
+            this.gr.clear();
+            this.sprites.push(proceso);
+        }
+    }
+    pinta() {
+        this.gr.lineStyle(10, glz.BLACK, 1);
+        this.drawPointLine();
+        this.crearProceso = true;
+    }
+    drawPointLine() {
+        let oldPos = new glz.Vector2(glz.mouse.oldx, glz.mouse.oldy);
+        let newPos = new glz.Vector2(glz.mouse.x, glz.mouse.y);
+        const delta = { x: oldPos.x - newPos.x, y: oldPos.y - newPos.y };
+        let deltaLength = oldPos.distanceTo(newPos);
+        this.drawPoint(newPos);
+        if (deltaLength > 1) {
+            const additionalPoints = deltaLength;
+            for (let i = 1; i < additionalPoints; i++) {
+                const pos = {
+                    x: newPos.x + delta.x * (i / additionalPoints),
+                    y: newPos.y + delta.y * (i / additionalPoints),
+                };
+                this.drawPoint(pos);
+            }
+        }
+    }
+    drawPoint(pos) {
+        this.gr.drawCircle(pos.x, pos.y, 1);
     }
 }
 //---------------------------------------------------------------------------------
