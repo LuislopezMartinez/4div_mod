@@ -83,7 +83,9 @@ class Game extends glz.GameObject {
     initialize() {
         glz.createButton(null, 20, "Empezar!", 100, 100);
         glz.createSlider(100, 150, 200, 0, 100, 10);
-        glz.createLabel(null, 16, "My Label", glz.RIGHT, 100, 230);
+        glz.createLabel(null, 16, "My Label", glz.RIGHT, 100, 200);
+        glz.createInputText(null, 16, "texto de prueba", 100, 250, 10);
+        glz.createInputTextArea(null, 16, "texto de prueba\npor los siglos", 300, 250, 50, 5);
         glz.fadeOn(1000);
     }
     frame() {

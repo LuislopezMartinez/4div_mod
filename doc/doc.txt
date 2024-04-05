@@ -108,6 +108,7 @@ LOADERS:
     texture loadTexture( texture_path );            - Carga una textura en el formato utilizado por three.js, se utiliza para texturizar primitivas graficas como cubos o esferas o planos.
 
 GUI:
+    /* INTERFAZ DE USUARIO CREADA PURAMENTE EN JS */
     lockEGUI();                             - Bloquea los controles actuales de la interfaz de usuario. Se usa cuando se quiere dormir toda la GUI actual para lanzar una ventana encima con otros controles.
     unlockEGUI();                           - Desbloquea los controles actuales.
     Process EGUIcheckButton( x, y, width, height, value );  - Crea un control del tipo checkBox.
@@ -115,6 +116,14 @@ GUI:
     Process EGUIgbutton( gr, x, y, size );                  - Crea un control del tipo boton con imagen.
     Process EGUIinputBox( font, size, label, text, x, y, w, h = size, pwdMode = false ); - Crea un control del tipo entrada de texto.
         .setEvent( string eventName );      - Establece un nombre de funcion callback para ser llamada cuando el control se active.
+
+NATIVE GUI:
+    /* INTERFAZ DE USUARIO HTML/DOM CLASICA INTEGRADA EN EL MOTOR */
+    createButton(font, size, text, x, y);                   - Crea un boton encima del canvas, Admite funete y tamaño.
+    createSlider(x, y, width, min, max, value, step);       - Crea un Input range a modo de slider clasico encima del canvas.
+    createLabel(font, size, text, align, x, y);             - Crea un label encima del canvas.
+    createInputText(font, size, text, x, y, width);         - Crea un input text encima del canvas.
+    createInputTextArea(font, size, text, x, y, cols, rows);- Crea un area de texto de entrada para escribir encima del canvas.
 
 
 

@@ -6144,3 +6144,51 @@ export function createLabel(font, size, text, align, x, y) {
     return b;
 }
 //---------------------------------------------------------------------------------
+export function createInputText(font, size, text, x, y, width) {
+    let fnt = undefined;
+    if (font === null) {
+        fnt = 'fnt';
+    } else {
+        if (font != 'fnt') {
+            fnt = font.family;
+        }
+    }
+    const b = document.createElement('input');
+    b.type = 'text';
+    //b.textContent = text;
+    b.defaultValue = text;
+    b.style.fontFamily = fnt;
+    b.style.fontSize = size + 'px';
+    b.style.position = 'absolute';
+    b.style.top = y + 'px';
+    b.style.left = x + 'px';
+    b.size = width;
+    b.style.zIndex = '3';
+    document.body.appendChild(b);
+    return b;
+}
+//---------------------------------------------------------------------------------
+export function createInputTextArea(font, size, text, x, y, cols = 20, rows = 10) {
+    let fnt = undefined;
+    if (font === null) {
+        fnt = 'fnt';
+    } else {
+        if (font != 'fnt') {
+            fnt = font.family;
+        }
+    }
+    const b = document.createElement('textarea');
+    b.cols = cols;
+    b.rows = rows;
+    b.style.resize = 'none';
+    b.defaultValue = text;
+    b.style.fontFamily = fnt;
+    b.style.fontSize = size + 'px';
+    b.style.position = 'absolute';
+    b.style.top = y + 'px';
+    b.style.left = x + 'px';
+    b.style.zIndex = '3';
+    document.body.appendChild(b);
+    return b;
+}
+//---------------------------------------------------------------------------------
