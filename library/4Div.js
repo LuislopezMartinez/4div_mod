@@ -480,6 +480,8 @@ export class GameObject {
 
         this.clipSwitchAvailable = true;    // en false estamos esperando el fin de una transicion de animacion.. no se puede cambiar hasta true..
 
+        this._collisionMouse = false;
+
     }
     //-------
     getClassName() {
@@ -598,6 +600,10 @@ export class GameObject {
                 this.material.opacity = this.alpha;
             }
         }
+    }
+    //-------
+    collisionMouse() {
+        return this._collisionMouse;
     }
     //============================================================
     createSprite(img_) {
@@ -2134,7 +2140,10 @@ function handleMouseDown(event) {
     let x = (mouse.canvas_x * WIDTH) / window.innerWidth;
     let y = (mouse.canvas_y * HEIGHT) / window.innerHeight;
     for (let i = 0; i < gameObjects.length; i++) {
-        if (collisionCircleToGameObject(x, y, gameObjects[i])) mouse.gameObject_collision = true;   // mouse intersect with gameObject graph..
+        if (collisionCircleToGameObject(x, y, gameObjects[i])) {
+            mouse.gameObject_collision = true;   // mouse intersect with gameObject graph..
+            gameObjects[i]._collisionMouse = true;
+        }
     }
 
 }
@@ -2160,6 +2169,9 @@ function handleMouseUp(event) {
     mouse.canvas_y = event.clientY;
 
     mouse.gameObject_collision = false;
+    for (let i = 0; i < gameObjects.length; i++) {
+        gameObjects[i]._collisionMouse = false;
+    }
 }
 //-------
 function handleMouseMove(event) {
@@ -6073,7 +6085,7 @@ export function collisionCircleToGameObject(x_, y_, _gameObject_) {
     return collision;
 }
 //---------------------------------------------------------------------------------
-export function createButton(font, size, text, x, y, eventName = "") {
+export function createButton(font, size, text, x, y, eventName = "", center = false) {
     let fnt = undefined;
     if (font === null) {
         fnt = 'fnt';
@@ -6087,15 +6099,23 @@ export function createButton(font, size, text, x, y, eventName = "") {
     b.style.fontFamily = fnt;
     b.style.fontSize = size + 'px';
     b.style.position = 'absolute';
-    b.style.top = y + 'px';
-    b.style.left = x + 'px';
     b.style.zIndex = '3';
+    b.eventName = eventName;
     document.body.appendChild(b);
-    //b.addEventListener('click', () => { method(eventName) });
+    if (eventName != "") {
+        b.addEventListener('click', () => { method(b.eventName) });
+    }
+    let xx = (window.innerWidth / WIDTH) * x;
+    let yy = (window.innerHeight / HEIGHT) * y;
+    if (center) {
+        xx -= b.getBoundingClientRect().width / 2;
+    }
+    b.style.top = yy + 'px';
+    b.style.left = xx + 'px';
     return b;
 }
 //---------------------------------------------------------------------------------
-export function createSlider(x, y, width, min = 0, max = 100, value = 0, step = 1) {
+export function createSlider(x, y, width, min = 0, max = 100, value = 0, step = 1, center = false) {
     let slider = document.createElement('input');
     slider.type = 'range';
     slider.min = min;
@@ -6104,10 +6124,16 @@ export function createSlider(x, y, width, min = 0, max = 100, value = 0, step = 
     slider.step = step;
     slider.style.width = width + 'px';
     slider.style.position = 'absolute';
-    slider.style.top = y + 'px';
-    slider.style.left = x + 'px';
-    slider.style.zIndex = '3';
     document.body.appendChild(slider);
+    let xx = (window.innerWidth / WIDTH) * x;
+    let yy = (window.innerHeight / HEIGHT) * y;
+    if (center) {
+        xx -= slider.getBoundingClientRect().width / 2;
+    }
+    slider.style.top = yy + 'px';
+    slider.style.left = xx + 'px';
+    slider.style.zIndex = '3';
+
     return slider;
 }
 //---------------------------------------------------------------------------------
@@ -6125,26 +6151,28 @@ export function createLabel(font, size, text, align, x, y) {
     b.style.fontFamily = fnt;
     b.style.fontSize = size + 'px';
     b.style.position = 'absolute';
-    b.style.top = y + 'px';
-
     b.style.zIndex = '3';
     document.body.appendChild(b);
+
+    let xx = (window.innerWidth / WIDTH) * x;
+    let yy = (window.innerHeight / HEIGHT) * y;
     switch (align) {
         case RIGHT:
             //..
             break;
         case LEFT:
-            x -= Math.ceil(b.clientWidth) * 2;
+            xx -= Math.ceil(b.clientWidth);
             break;
         case CENTER:
-            x -= Math.ceil(b.clientWidth);
+            xx -= Math.ceil(b.clientWidth) / 2;
             break;
     }
-    b.style.left = x + 'px';
+    b.style.left = xx + 'px';
+    b.style.top = yy + 'px';
     return b;
 }
 //---------------------------------------------------------------------------------
-export function createInputText(font, size, text, x, y, width) {
+export function createInputText(font, size, text, x, y, width, center = false) {
     let fnt = undefined;
     if (font === null) {
         fnt = 'fnt';
@@ -6160,15 +6188,22 @@ export function createInputText(font, size, text, x, y, width) {
     b.style.fontFamily = fnt;
     b.style.fontSize = size + 'px';
     b.style.position = 'absolute';
-    b.style.top = y + 'px';
-    b.style.left = x + 'px';
+    document.body.appendChild(b);
+
+    let xx = (window.innerWidth / WIDTH) * x;
+    let yy = (window.innerHeight / HEIGHT) * y;
+    if (center) {
+        xx -= b.getBoundingClientRect().width / 2;
+    }
+    b.style.top = yy + 'px';
+    b.style.left = xx + 'px';
     b.size = width;
     b.style.zIndex = '3';
-    document.body.appendChild(b);
+
     return b;
 }
 //---------------------------------------------------------------------------------
-export function createInputTextArea(font, size, text, x, y, cols = 20, rows = 10) {
+export function createInputTextArea(font, size, text, x, y, cols = 20, rows = 10, center = false) {
     let fnt = undefined;
     if (font === null) {
         fnt = 'fnt';
@@ -6185,10 +6220,16 @@ export function createInputTextArea(font, size, text, x, y, cols = 20, rows = 10
     b.style.fontFamily = fnt;
     b.style.fontSize = size + 'px';
     b.style.position = 'absolute';
-    b.style.top = y + 'px';
-    b.style.left = x + 'px';
-    b.style.zIndex = '3';
     document.body.appendChild(b);
+    let xx = (window.innerWidth / WIDTH) * x;
+    let yy = (window.innerHeight / HEIGHT) * y;
+    if (center) {
+        xx -= b.getBoundingClientRect().width / 2;
+    }
+    b.style.top = yy + 'px';
+    b.style.left = xx + 'px';
+    b.style.zIndex = '3';
+
     return b;
 }
 //---------------------------------------------------------------------------------
