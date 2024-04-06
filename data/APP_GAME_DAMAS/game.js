@@ -18,7 +18,7 @@ window.setup = function () {
     glz.setBackgroundColor(glz.WHITE);          // color de fondo de pantalla..
     glz.setFadingColor(0xffffff);           // color del fade de pantalla..
     glz.enableShadows(false);               // activa el sistema de sobras..
-    glz.setMode(720, 1280, false, true);    // define la resolucion grafica..
+    glz.setMode(1280, 720, false, true);    // define la resolucion grafica..
     glz.setFps(60);                         // limita los fotogramas por segundo..
     glz.setFog(0, 250);                     // configura la niebla del entorno 3d..
     glz.setAmbientLight(glz.WHITE, 1);          // iluminacion ambiental de la escena 3d..
@@ -75,11 +75,6 @@ class Game extends glz.GameObject {
     }
     initialize() {
         new Tablero();
-        glz.createButton(null, 18, "aflkghsdfkl", glz.WIDTH / 2, 50, "", true);
-        glz.createSlider(glz.WIDTH / 2, 100, 200, 0, 100, 0, 1, true);
-        glz.createLabel(null, 20, "dhflksjghsdlkg", glz.CENTER, glz.WIDTH / 2, 150);
-        glz.createInputText(null, 20, "bla bla bla", glz.WIDTH / 2, 200, 20, true);
-        glz.createInputTextArea(null, 20, "bla bla bla", glz.WIDTH / 2, 200, 20, 10, true);
         glz.fadeOn(1000);
     }
     frame() {
@@ -102,9 +97,7 @@ export class Tablero extends glz.GameObject {
         this.y = glz.HEIGHT / 2;
         this.setGraph(img[2]);
     }
-    finalize() {
-
-    }
+    finalize() { }
     frame() {
         switch (this.st) {
             case 0:
