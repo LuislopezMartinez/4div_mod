@@ -109,23 +109,23 @@ export class Tablero extends glz.GameObject {
                         let yy = v.y + separacion * i;
                         switch (i) {
                             case 0:
-                                if (j % 2 == 0) {/* */ } else { new Ficha(0, xx, yy); }
+                                if (j % 2 == 0) {/* */ } else { new Ficha(0, xx, yy, i, j); }
                                 break;
                             case 1:
-                                if (j % 2 == 0) { new Ficha(0, xx, yy); } else {/* */ }
+                                if (j % 2 == 0) { new Ficha(0, xx, yy, i, j); } else {/* */ }
                                 break;
                             case 2:
-                                if (j % 2 == 0) {/* */ } else { new Ficha(0, xx, yy); }
+                                if (j % 2 == 0) {/* */ } else { new Ficha(0, xx, yy, i, j); }
                                 break;
 
                             case 5:
-                                if (j % 2 == 0) { new Ficha(1, xx, yy); } else {/* */ }
+                                if (j % 2 == 0) { new Ficha(1, xx, yy, i, j); } else {/* */ }
                                 break;
                             case 6:
-                                if (j % 2 == 0) {/* */ } else { new Ficha(1, xx, yy); }
+                                if (j % 2 == 0) {/* */ } else { new Ficha(1, xx, yy, i, j); }
                                 break;
                             case 7:
-                                if (j % 2 == 0) { new Ficha(1, xx, yy); } else {/* */ }
+                                if (j % 2 == 0) { new Ficha(1, xx, yy, i, j); } else {/* */ }
                                 break;
                         }
                     }
@@ -133,23 +133,27 @@ export class Tablero extends glz.GameObject {
                 this.st = 10;
                 break;
             case 10:
+
                 break;
         }
     }
 }
 //---------------------------------------------------------------------------------
 export class Ficha extends glz.GameObject {
-    constructor(gr, x, y) {
+    constructor(gr, x, y, cx, cy) {
         super();
         this.st = 0;
         this.gr = gr;
         this.x = x;
         this.y = y;
+        this.cx = cx;
+        this.cy = cy;
         this.esRey = false;
     }
     initialize() {
         this.size = 0.65;
         this.setGraph(img[this.gr]);
+        console.log(this.graph);
     }
     finalize() { }
     frame() {
@@ -167,6 +171,9 @@ export class Ficha extends glz.GameObject {
                 }
                 break;
         }
+    }
+    getPosibleMovements() {
+
     }
 }
 //---------------------------------------------------------------------------------

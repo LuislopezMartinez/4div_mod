@@ -6031,9 +6031,21 @@ export function collisionCircleToGameObject(x_, y_, _gameObject_) {
     let circle = { x: x_, y: y_, radius: 1 };
     let rect;
     if (_gameObject_.sizex != 1 || _gameObject_.sizey != 1) {
-        rect = { x: _gameObject_.x, y: _gameObject_.y, width: _gameObject_.graph.width * _gameObject_.sizex, height: _gameObject_.graph.height * _gameObject_.sizey, rotation: radians(_gameObject_.angle) };
+        rect = {
+            x: _gameObject_.x,
+            y: _gameObject_.y,
+            width: _gameObject_.graph.width,
+            height: _gameObject_.graph.height,
+            rotation: radians(_gameObject_.angle)
+        };
     } else {
-        rect = { x: _gameObject_.x, y: _gameObject_.y, width: _gameObject_.graph.width * _gameObject_.size, height: _gameObject_.graph.height * _gameObject_.size, rotation: radians(_gameObject_.angle) };
+        rect = {
+            x: _gameObject_.x,
+            y: _gameObject_.y,
+            width: _gameObject_.graph.width,
+            height: _gameObject_.graph.height,
+            rotation: radians(_gameObject_.angle)
+        };
     }
 
 
