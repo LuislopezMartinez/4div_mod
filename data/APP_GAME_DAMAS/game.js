@@ -91,45 +91,55 @@ export class Tablero extends glz.GameObject {
         super();
         this.st = 0;
         this.width = 79;
+        this.offset = undefined;
+        this.separacion = undefined;
+        this.matrix = [];
     }
     initialize() {
+        this.buildMatrix();
         this.x = glz.WIDTH / 2;
         this.y = glz.HEIGHT / 2;
         this.setGraph(img[2]);
+        this.offset = this.getRealPoint(67, 67);
+        this.separacion = this.size * this.width;
     }
     finalize() { }
+
+    buildMatrix() {
+        for (let fila = 0; fila < 8; fila++) {
+            this.matrix.push([false, false, false, false, false, false, false, false]); // add void row..
+        }
+    }
+
     frame() {
         switch (this.st) {
             case 0:
-                let v = this.getRealPoint(67, 67);
-                let separacion = this.size * this.width;
                 for (let i = 0; i < 8; i++) {
                     for (let j = 0; j < 8; j++) {
-                        let xx = v.x + separacion * j;
-                        let yy = v.y + separacion * i;
                         switch (i) {
                             case 0:
-                                if (j % 2 == 0) {/* */ } else { new Ficha(0, xx, yy, i, j); }
+                                if (j % 2 == 0) {/* */ } else { new Ficha(0, j, i); }
                                 break;
                             case 1:
-                                if (j % 2 == 0) { new Ficha(0, xx, yy, i, j); } else {/* */ }
+                                if (j % 2 == 0) { new Ficha(0, j, i); } else {/* */ }
                                 break;
                             case 2:
-                                if (j % 2 == 0) {/* */ } else { new Ficha(0, xx, yy, i, j); }
+                                if (j % 2 == 0) {/* */ } else { new Ficha(0, j, i); }
                                 break;
 
                             case 5:
-                                if (j % 2 == 0) { new Ficha(1, xx, yy, i, j); } else {/* */ }
+                                if (j % 2 == 0) { new Ficha(1, j, i); } else {/* */ }
                                 break;
                             case 6:
-                                if (j % 2 == 0) {/* */ } else { new Ficha(1, xx, yy, i, j); }
+                                if (j % 2 == 0) {/* */ } else { new Ficha(1, j, i); }
                                 break;
                             case 7:
-                                if (j % 2 == 0) { new Ficha(1, xx, yy, i, j); } else {/* */ }
+                                if (j % 2 == 0) { new Ficha(1, j, i); } else {/* */ }
                                 break;
                         }
                     }
                 }
+
                 this.st = 10;
                 break;
             case 10:
@@ -140,20 +150,22 @@ export class Tablero extends glz.GameObject {
 }
 //---------------------------------------------------------------------------------
 export class Ficha extends glz.GameObject {
-    constructor(gr, x, y, cx, cy) {
+    constructor(gr, cx, cy) {
         super();
         this.st = 0;
         this.gr = gr;
-        this.x = x;
-        this.y = y;
         this.cx = cx;
         this.cy = cy;
         this.esRey = false;
+        this.t = undefined;
     }
     initialize() {
+        this.x = this.father.offset.x + this.father.separacion * this.cx;
+        this.y = this.father.offset.y + this.father.separacion * this.cy;
         this.size = 0.65;
         this.setGraph(img[this.gr]);
-        console.log(this.graph);
+        this.t = new glz.Write(null, 18, glz.str(this.cx) + " - " + glz.str(this.cy), glz.CENTER, this.x, this.y, glz.BLACK, 1);
+        this.setMatrixCell();
     }
     finalize() { }
     frame() {
@@ -166,17 +178,68 @@ export class Ficha extends glz.GameObject {
                 break;
             case 10:
                 if (!glz.mouse.left) {
+                    console.log(this.getPosibleMovements());
                     this.noTint();
                     this.st = 0;
                 }
                 break;
         }
     }
+    setMatrixCell() {
+        this.father.matrix[this.cy][this.cx] = true;
+    }
     getPosibleMovements() {
+        let posibleMovements = [];
+        //a     b
+        //   x
+        //c     d
+        let a = this.getMatrixCell(this.cx - 1, this.cy - 1);
+        let b = this.getMatrixCell(this.cx + 1, this.cy - 1);
+        let c = this.getMatrixCell(this.cx - 1, this.cy + 1);
+        let d = this.getMatrixCell(this.cx + 1, this.cy + 1);
+        if (!a) posibleMovements.push({ cx: this.cx - 1, cy: this.cy - 1 });
+        if (!b) posibleMovements.push({ cx: this.cx + 1, cy: this.cy - 1 });
+        if (!c) posibleMovements.push({ cx: this.cx - 1, cy: this.cy + 1 });
+        if (!d) posibleMovements.push({ cx: this.cx + 1, cy: this.cy + 1 });
+        return posibleMovements;
+    }
 
+    getMatrixCell(x, y) {
+        let a = true;
+        try {
+            a = this.father.matrix[y][x];
+        } catch (e) {
+            // out of range exception..
+        }
+        if (a == undefined) a = true;
+        return a;
     }
 }
 //---------------------------------------------------------------------------------
+export class NuevaPosicion extends glz.GameObject {
+    constructor(gr, cx, cy) {
+        super();
+        this.st = 0;
+        this.gr = gr;
+        this.cx = 0;
+        this.cy = 0;
+    }
+    initialize() {
+        this.x = this.father.offset.x + this.father.separacion * this.cx;
+        this.y = this.father.offset.y + this.father.separacion * this.cy;
+        this.setGraph(img[this.gr]);
+    }
+    finalize() { }
+    frame() {
+        switch (this.st) {
+            case 0:
+                if (glz.frameCount % 60 == 0) this.visible = !this.visible;
+                break;
+            case 10:
+                break;
+        }
+    }
+}
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
