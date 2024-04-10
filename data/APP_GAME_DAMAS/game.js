@@ -198,6 +198,7 @@ export class Ficha extends glz.GameObject {
     finalize() {
         this.father.matrix[this.cy][this.cx] = false;
         glz.signal(this.t, glz.s_kill);
+        glz.signal(this.grKing, glz.s_kill);
     }
     esMiTurno() {
         if (this.color == "blue") {
@@ -219,6 +220,7 @@ export class Ficha extends glz.GameObject {
                 if (this.collisionMouse() && this.esMiTurno()) {
                     if (this.esRey) {
                         // aqui implementar el movimiento en diagonal hasta el final del tablero..
+                        this.moves = this.getPosibleMovements_KingMode();
                     } else {
                         this.moves = this.getPosibleMovements();
                     }
@@ -330,6 +332,93 @@ export class Ficha extends glz.GameObject {
             if (c == false) posibleMovements.push({ cx: this.cx - 1, cy: this.cy + 1, type: 'c' });
             if (d == false) posibleMovements.push({ cx: this.cx + 1, cy: this.cy + 1, type: 'd' });
         }
+        return posibleMovements;
+    }
+
+    getPosibleMovements_KingMode() {
+        let posibleMovements = [];
+        //a     b
+        //   x
+        //c     d
+        const max = 6;  // maximo salto en diagonal..
+        let a = true, b = true, c = true, d = true;
+
+        // a..
+        for (let i = 1; i < max; i++) {
+            let cx = this.cx - i;
+            let cy = this.cy - i;
+            let value = this.getMatrixCell(cx, cy);
+            if (value == false) {
+                posibleMovements.push({ cx: cx, cy: cy, type: 'a' });
+            } else {
+                if (value != this.color) {
+                    if (this.getMatrixCell(cx - 1, cy - 1) == false) {
+                        posibleMovements.push({ cx: cx - 1, cy: cy - 1, type: 'aa' });
+                        i = max;
+                    }
+                } else {
+                    i = max;
+                }
+            }
+        }
+
+        // b..
+        for (let i = 1; i < max; i++) {
+            let cx = this.cx + i;
+            let cy = this.cy - i;
+            let value = this.getMatrixCell(cx, cy);
+            if (value == false) {
+                posibleMovements.push({ cx: cx, cy: cy, type: 'b' });
+            } else {
+                if (value != this.color) {
+                    if (this.getMatrixCell(cx + 1, cy - 1) == false) {
+                        posibleMovements.push({ cx: cx + 1, cy: cy - 1, type: 'bb' });
+                        i = max;
+                    }
+                } else {
+                    i = max;
+                }
+            }
+        }
+
+        // c..
+        for (let i = 1; i < max; i++) {
+            let cx = this.cx - i;
+            let cy = this.cy + i;
+            let value = this.getMatrixCell(cx, cy);
+            if (value == false) {
+                posibleMovements.push({ cx: cx, cy: cy, type: 'c' });
+            } else {
+                if (value != this.color) {
+                    if (this.getMatrixCell(cx - 1, cy + 1) == false) {
+                        posibleMovements.push({ cx: cx - 1, cy: cy + 1, type: 'cc' });
+                        i = max;
+                    }
+                } else {
+                    i = max;
+                }
+            }
+        }
+
+        // d..
+        for (let i = 1; i < max; i++) {
+            let cx = this.cx + i;
+            let cy = this.cy + i;
+            let value = this.getMatrixCell(cx, cy);
+            if (value == false) {
+                posibleMovements.push({ cx: cx, cy: cy, type: 'd' });
+            } else {
+                if (value != this.color) {
+                    if (this.getMatrixCell(cx + 1, cy + 1) == false) {
+                        posibleMovements.push({ cx: cx + 1, cy: cy + 1, type: 'dd' });
+                        i = max;
+                    }
+                } else {
+                    i = max;
+                }
+            }
+        }
+
         return posibleMovements;
     }
 
