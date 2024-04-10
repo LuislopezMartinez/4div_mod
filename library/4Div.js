@@ -2192,6 +2192,17 @@ function handleStart(event) {
         mouse.setPoint(event.changedTouches[i].identifier, true, event.changedTouches[i].clientX, event.changedTouches[i].clientY);
     }
 
+    // revisar..
+    let x = (mouse.canvas_x * WIDTH) / window.innerWidth;
+    let y = (mouse.canvas_y * HEIGHT) / window.innerHeight;
+    for (let i = 0; i < gameObjects.length; i++) {
+        if (collisionCircleToGameObject(x, y, gameObjects[i])) {
+            mouse.gameObject_collision = true;   // mouse intersect with gameObject graph..
+            gameObjects[i]._collisionMouse = true;
+        }
+    }
+
+
 }
 //-------
 function handleEnd(event) {
@@ -2202,6 +2213,13 @@ function handleEnd(event) {
     for (var i = 0; i < event.changedTouches.length; i++) {
         mouse.setPoint(event.changedTouches[i].identifier, false, 0, 0);
     }
+
+    // revisar..
+    mouse.gameObject_collision = false;
+    for (let i = 0; i < gameObjects.length; i++) {
+        gameObjects[i]._collisionMouse = false;
+    }
+
 }
 //-------
 function handleMove(event) {
